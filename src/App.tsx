@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { newId } from "./core/ids";
 import { GUEST_KID } from "./data/defaults";
 import { createLocalRepository } from "./data/localRepository";
 import type { FamilyData, Kid } from "./data/types";
@@ -6,7 +7,9 @@ import { findGame } from "./games";
 import { KidEditor } from "./components/KidEditor";
 import { HomeScreen } from "./screens/HomeScreen";
 import { KidPicker } from "./screens/KidPicker";
-import { PlayPlaceholder } from "./screens/PlayPlaceholder";
+import { PlayScreen } from "./screens/PlayScreen";
+import { statsFor } from "./data/stats";
+import type { FinishedPlay } from "./play/types";
 
 /**
  * One repository for the whole app. Milestone 5 swaps this single line for the
@@ -55,6 +58,20 @@ export default function App() {
     setScreen({ kind: "picker" });
   }
 
+  async function savePlay(kid: Kid, play: FinishedPlay): Promise<void> {
+    await repository.addSession({
+      id: newId(),
+      kidId: kid.id,
+      gameId: play.gameId,
+      level: kid.level,
+      score: play.score,
+      detail: play.detail,
+      playedAt: new Date().toISOString(),
+      durationMs: Math.round(play.durationMs),
+    });
+    setData(await repository.loadFamily());
+  }
+
   function backToPicker(): void {
     setKidId(null);
     setScreen({ kind: "picker" });
@@ -73,7 +90,13 @@ export default function App() {
     const game = findGame(screen.gameId);
     if (game) {
       return (
-        <PlayPlaceholder game={game} kid={currentKid} onBack={() => setScreen({ kind: "home" })} />
+        <PlayScreen
+          game={game}
+          kid={currentKid}
+          previousBest={statsFor(data.sessions, currentKid.id, game.meta.id).best}
+          onSave={(play) => void savePlay(currentKid, play)}
+          onHome={() => setScreen({ kind: "home" })}
+        />
       );
     }
   }

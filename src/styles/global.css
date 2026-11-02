@@ -400,3 +400,136 @@ input:focus-visible {
     transition: none !important;
   }
 }
+
+/* ---------- play screen ---------- */
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bar h2 {
+  font-size: 1.4rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.timebar {
+  height: 8px;
+  border-radius: 99px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.timebar i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.1s linear;
+}
+
+.howto {
+  color: var(--muted);
+  text-align: center;
+  margin: 0;
+}
+
+/* The flash ring sits on top of the board and fades out by itself. */
+.board {
+  position: relative;
+}
+
+.flash {
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  pointer-events: none;
+  box-shadow: 0 0 0 5px var(--good);
+  animation: flash-out 0.22s ease-out forwards;
+}
+
+.flash.wrong {
+  box-shadow: 0 0 0 5px var(--bad);
+}
+
+@keyframes flash-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flash {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+.big {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(3rem, 14vw, 5.5rem);
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.answers {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+}
+
+.ans {
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 8px;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 64px;
+}
+
+.ans:active {
+  transform: translateY(2px);
+}
+
+.dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.center {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  text-align: center;
+}
+
+.result .score {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 5rem;
+  line-height: 1;
+  color: var(--yellow);
+}
+
+.result p {
+  margin: 0;
+}
+
+.btnrow {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
