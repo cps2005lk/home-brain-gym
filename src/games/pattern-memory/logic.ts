@@ -153,6 +153,7 @@ export const patternMemory = defineGame<PatternMemoryState, PatternMemoryInput, 
       glyph: "▦",
       accent: "var(--yellow)",
       scoreUnit: "squares",
+      scoreUnitOne: "square",
       timed: false,
     },
 

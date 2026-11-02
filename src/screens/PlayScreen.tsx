@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { scoreUnitLabel } from "../core/game";
 import { LEVELS } from "../core/level";
 import { isGuest } from "../data/defaults";
 import type { Kid } from "../data/types";
@@ -61,7 +62,7 @@ export function PlayScreen({ game, kid, previousBest, onSave, onHome }: PlayScre
       <ResultScreen
         play={play}
         gameName={game.meta.name}
-        scoreUnit={game.meta.scoreUnit}
+        scoreUnit={scoreUnitLabel(play.score, game.meta)}
         kidName={kid.name}
         previousBest={bestBefore}
         wasSaved={!isGuest(kid)}

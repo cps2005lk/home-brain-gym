@@ -16,8 +16,10 @@ export interface GameMeta {
   readonly glyph: string;
   /** CSS colour token, for example "var(--red)". */
   readonly accent: string;
-  /** What the score counts: "correct", "squares", "points". */
+  /** What the score counts, for more than one: "correct", "squares", "points". */
   readonly scoreUnit: string;
+  /** The same word for exactly one: "correct", "square", "point". */
+  readonly scoreUnitOne: string;
   /** true = the game ends when the clock runs out, false = it ends when lives run out. */
   readonly timed: boolean;
 }
@@ -89,6 +91,11 @@ export interface GameModule<TState, TInput, TLevelConfig> {
  * checking inside create() and reduce() without writing the types twice.
  * Same idea as a generic factory method in C# letting you skip <T>.
  */
+/** "1 point" but "3 points". Kids notice this kind of thing. */
+export function scoreUnitLabel(count: number, meta: GameMeta): string {
+  return count === 1 ? meta.scoreUnitOne : meta.scoreUnit;
+}
+
 export function defineGame<TState, TInput, TLevelConfig>(
   game: GameModule<TState, TInput, TLevelConfig>,
 ): GameModule<TState, TInput, TLevelConfig> {

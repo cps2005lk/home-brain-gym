@@ -68,6 +68,7 @@ export const arrowRush = defineGame<ArrowRushState, ArrowRushInput, ArrowRushLev
     glyph: "→",
     accent: "var(--green)",
     scoreUnit: "correct",
+    scoreUnitOne: "correct",
     timed: true,
   },
 

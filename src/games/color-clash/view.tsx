@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { newId } from "../../core/ids";
 import type { GameProgress } from "../../core/game";
 import { PlayShell } from "../../play/PlayShell";
 import type { GameViewProps } from "../../play/types";
@@ -17,6 +18,7 @@ export function ColorClashView({ kid, onFinish, onQuit }: GameViewProps) {
   const handleFinish = useCallback(
     (progress: GameProgress, durationMs: number) => {
       onFinish({
+        id: newId(),
         gameId: colorClash.meta.id,
         score: progress.score,
         detail: progress.detail,

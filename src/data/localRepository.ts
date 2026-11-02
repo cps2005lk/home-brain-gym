@@ -67,10 +67,11 @@ export function createLocalRepository(
     addSession: async (session) => {
       // A guest leaves no trace.
       if (session.kidId === GUEST_KID.id) return;
-      change((data) => ({
-        ...data,
-        sessions: [...data.sessions, session].slice(-MAX_SESSIONS),
-      }));
+      change((data) => {
+        // Writing the same play twice must not create two rows.
+        const others = data.sessions.filter((existing) => existing.id !== session.id);
+        return { ...data, sessions: [...others, session].slice(-MAX_SESSIONS) };
+      });
     },
 
     deleteSession: async (sessionId) => {

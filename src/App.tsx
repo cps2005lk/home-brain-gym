@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { newId } from "./core/ids";
 import { GUEST_KID } from "./data/defaults";
 import { createLocalRepository } from "./data/localRepository";
 import type { FamilyData, Kid } from "./data/types";
@@ -60,7 +59,7 @@ export default function App() {
 
   async function savePlay(kid: Kid, play: FinishedPlay): Promise<void> {
     await repository.addSession({
-      id: newId(),
+      id: play.id,
       kidId: kid.id,
       gameId: play.gameId,
       level: kid.level,

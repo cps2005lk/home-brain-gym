@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { GameMeta, GameProgress } from "../core/game";
+import { scoreUnitLabel, type GameMeta, type GameProgress } from "../core/game";
 
 interface PlayShellProps {
   readonly meta: GameMeta;
@@ -35,7 +35,7 @@ export function PlayShell({
       <div className="bar">
         <h2>{meta.name}</h2>
         <span className="pill">
-          {progress.score} {meta.scoreUnit}
+          {progress.score} {scoreUnitLabel(progress.score, meta)}
         </span>
         {secondsLeft !== null && <span className="pill">{secondsLeft}s</span>}
         {progress.livesLeft !== null && (

@@ -1,6 +1,9 @@
 import type { ComponentType } from "react";
 import type { GameViewProps } from "../play/types";
+import { ArrowRushView } from "./arrow-rush/view";
 import { ColorClashView } from "./color-clash/view";
+import { PatternMemoryView } from "./pattern-memory/view";
+import { RuleSwitchView } from "./rule-switch/view";
 
 /**
  * Which React screen draws which game. Adding a game means one line here and
@@ -11,4 +14,7 @@ import { ColorClashView } from "./color-clash/view";
  */
 export const GAME_VIEWS: Record<string, ComponentType<GameViewProps>> = {
   "color-clash": ColorClashView,
+  "pattern-memory": PatternMemoryView,
+  "rule-switch": RuleSwitchView,
+  "arrow-rush": ArrowRushView,
 };

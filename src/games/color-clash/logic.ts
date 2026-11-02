@@ -85,6 +85,7 @@ export const colorClash = defineGame<ColorClashState, ColorClashInput, ColorClas
     glyph: "Aa",
     accent: "var(--red)",
     scoreUnit: "correct",
+    scoreUnitOne: "correct",
     timed: true,
   },
 

@@ -98,3 +98,27 @@ describe("local repository", () => {
     expect(data.family.id).toBe("id-1");
   });
 });
+
+describe("saving the same play twice", () => {
+  it("keeps one row, not two", async () => {
+    const repo = createLocalRepository(createFakeStorage(), countingIds());
+    await repo.loadFamily();
+
+    await repo.addSession(session({ id: "same-play", score: 11 }));
+    await repo.addSession(session({ id: "same-play", score: 11 }));
+
+    const { sessions } = await repo.loadFamily();
+    expect(sessions).toHaveLength(1);
+    expect(sessions[0]?.score).toBe(11);
+  });
+
+  it("still keeps two different plays", async () => {
+    const repo = createLocalRepository(createFakeStorage(), countingIds());
+    await repo.loadFamily();
+
+    await repo.addSession(session({ id: "play-1", score: 11 }));
+    await repo.addSession(session({ id: "play-2", score: 14 }));
+
+    expect((await repo.loadFamily()).sessions).toHaveLength(2);
+  });
+});

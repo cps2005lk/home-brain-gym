@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defineGame } from "./game";
+import { defineGame, scoreUnitLabel } from "./game";
 import type { Rng } from "./random";
 
 /**
@@ -39,6 +39,7 @@ const tapGame = defineGame<TapState, "tap", TapLevel>({
     glyph: "T",
     accent: "var(--green)",
     scoreUnit: "taps",
+    scoreUnitOne: "tap",
     timed: true,
   },
   levels: tapLevels,
@@ -94,5 +95,13 @@ describe("game contract", () => {
 
     const afterEnd = tapGame.reduce(ended, { kind: "answer", input: "tap", atMs: 31_000 }, zeroRng);
     expect(tapGame.progress(afterEnd).score).toBe(0);
+  });
+});
+
+describe("score unit wording", () => {
+  it("uses the singular word for exactly one", () => {
+    expect(scoreUnitLabel(1, tapGame.meta)).toBe("tap");
+    expect(scoreUnitLabel(0, tapGame.meta)).toBe("taps");
+    expect(scoreUnitLabel(5, tapGame.meta)).toBe("taps");
   });
 });

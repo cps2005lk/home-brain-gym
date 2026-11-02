@@ -75,6 +75,7 @@ export const ruleSwitch = defineGame<RuleSwitchState, RuleSwitchInput, RuleSwitc
     glyph: "7",
     accent: "var(--blue)",
     scoreUnit: "points",
+    scoreUnitOne: "point",
     timed: true,
   },
 
