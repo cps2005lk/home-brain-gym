@@ -1,102 +1,101 @@
-import { useState } from "react";
-import heroImg from "./assets/hero.png";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "./assets/vite.svg";
-import "./App.css";
+import { useEffect, useState } from "react";
+import { GUEST_KID } from "./data/defaults";
+import { createLocalRepository } from "./data/localRepository";
+import type { FamilyData, Kid } from "./data/types";
+import { findGame } from "./games";
+import { KidEditor } from "./components/KidEditor";
+import { HomeScreen } from "./screens/HomeScreen";
+import { KidPicker } from "./screens/KidPicker";
+import { PlayPlaceholder } from "./screens/PlayPlaceholder";
 
-function App() {
-  const [count, setCount] = useState(0);
+/**
+ * One repository for the whole app. Milestone 5 swaps this single line for the
+ * Supabase version; no screen knows the difference.
+ */
+const repository = createLocalRepository(window.localStorage);
+
+/** Which screen we are on. A discriminated union again, now for navigation. */
+type Screen =
+  | { readonly kind: "picker" }
+  | { readonly kind: "home" }
+  | { readonly kind: "play"; readonly gameId: string }
+  | { readonly kind: "edit"; readonly kidId: string };
+
+export default function App() {
+  /** `useState<T | null>` needs the type written, because null alone says nothing. */
+  const [data, setData] = useState<FamilyData | null>(null);
+  const [kidId, setKidId] = useState<string | null>(null);
+  const [screen, setScreen] = useState<Screen>({ kind: "picker" });
+
+  /**
+   * `useEffect` runs *after* drawing. This one loads the saved family once,
+   * because the dependency list at the end is empty.
+   * `void` in front of the promise says "I am not waiting for this on purpose".
+   */
+  useEffect(() => {
+    void repository.loadFamily().then(setData);
+  }, []);
+
+  if (!data) {
+    return <p className="sub">Loading…</p>;
+  }
+
+  const currentKid: Kid | null =
+    kidId === GUEST_KID.id ? GUEST_KID : (data.kids.find((kid) => kid.id === kidId) ?? null);
+
+  async function chooseKid(id: string): Promise<void> {
+    setKidId(id);
+    setScreen({ kind: "home" });
+    if (id !== GUEST_KID.id) await repository.setLastKid(id);
+  }
+
+  async function saveKid(kid: Kid): Promise<void> {
+    await repository.saveKid(kid);
+    setData(await repository.loadFamily());
+    setScreen({ kind: "picker" });
+  }
+
+  function backToPicker(): void {
+    setKidId(null);
+    setScreen({ kind: "picker" });
+  }
+
+  if (screen.kind === "edit") {
+    const kid = data.kids.find((item) => item.id === screen.kidId);
+    if (kid) {
+      return (
+        <KidEditor kid={kid} onSave={(updated) => void saveKid(updated)} onCancel={backToPicker} />
+      );
+    }
+  }
+
+  if (screen.kind === "play" && currentKid) {
+    const game = findGame(screen.gameId);
+    if (game) {
+      return (
+        <PlayPlaceholder game={game} kid={currentKid} onBack={() => setScreen({ kind: "home" })} />
+      );
+    }
+  }
+
+  if (screen.kind === "home" && currentKid) {
+    return (
+      <HomeScreen
+        kid={currentKid}
+        sessions={data.sessions}
+        onPlay={(gameId) => setScreen({ kind: "play", gameId })}
+        onSwitchKid={backToPicker}
+      />
+    );
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button type="button" className="counter" onClick={() => setCount((count) => count + 1)}>
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg className="button-icon" role="presentation" aria-hidden="true">
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg className="button-icon" role="presentation" aria-hidden="true">
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg className="button-icon" role="presentation" aria-hidden="true">
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg className="button-icon" role="presentation" aria-hidden="true">
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    <KidPicker
+      kids={data.kids}
+      sessions={data.sessions}
+      lastKidId={data.lastKidId}
+      onChoose={(id) => void chooseKid(id)}
+      onEdit={(kid) => setScreen({ kind: "edit", kidId: kid.id })}
+    />
   );
 }
-
-export default App;

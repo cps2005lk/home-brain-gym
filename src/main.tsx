@@ -1,10 +1,19 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./index.css";
-import App from "./App.tsx";
+import App from "./App";
+import "./styles/global.css";
 
-createRoot(document.getElementById("root")!).render(
+/**
+ * The entry point. getElementById returns `HTMLElement | null`, so strict mode
+ * makes us handle the missing case - we cannot just hope it is there.
+ */
+const rootElement = document.getElementById("root");
+if (!rootElement) throw new Error("index.html is missing the #root element");
+
+createRoot(rootElement).render(
   <StrictMode>
-    <App />
+    <div className="wrap">
+      <App />
+    </div>
   </StrictMode>,
 );
