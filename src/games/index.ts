@@ -1,5 +1,7 @@
+import { arrowRush } from "./arrow-rush/logic";
 import { colorClash } from "./color-clash/logic";
 import { patternMemory } from "./pattern-memory/logic";
+import { ruleSwitch } from "./rule-switch/logic";
 
 /**
  * The game registry. Adding a new game = add its folder, then add one import
@@ -9,7 +11,7 @@ import { patternMemory } from "./pattern-memory/logic";
  * and input types - not just "some game". The home screen only reads `.meta`,
  * which every game has.
  */
-export const GAMES = [colorClash, patternMemory] as const;
+export const GAMES = [colorClash, patternMemory, ruleSwitch, arrowRush] as const;
 
 export type AnyGame = (typeof GAMES)[number];
 
