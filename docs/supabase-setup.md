@@ -32,10 +32,13 @@ drop function if exists public.is_family_member(uuid);
 drop type if exists public.level_id;
 ```
 
-## 3. Copy the two keys
+## 3. Copy the URL and the publishable key
 
-1. **Project Settings → API**.
-2. Copy **Project URL** and the **anon / public** key.
+1. **Project Settings → API Keys** (the **Connect** button at the top of the
+   dashboard shows the same values).
+2. Copy:
+   - the **Project URL**, which looks like `https://abcdefgh.supabase.co`
+   - the **publishable key**, which starts with `sb_publishable_`
 3. In the project folder, copy `.env.example` to `.env.local` and paste both
    values in.
 
@@ -61,6 +64,8 @@ it.
 npx supabase login
 npx supabase gen types typescript --project-id YOUR-PROJECT-REF > src/data/database.types.ts
 ```
+
+Your project ref is the part in front of `.supabase.co` in the Project URL.
 
 ## What the schema does
 
