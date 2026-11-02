@@ -20,10 +20,12 @@ Everything here stays inside the free plan.
 2. Open `supabase/migrations/0001_init.sql` from this repository, copy
    everything, paste it into the editor.
 3. Press **Run**. You should see "Success. No rows returned".
-4. Open **Table Editor**: you should now see `families`, `family_members`,
+4. Repeat with `supabase/migrations/0002_lock_out_anon.sql`. This one takes
+   away the access Supabase gives by default to visitors who are not signed in.
+5. Open **Table Editor**: you should now see `families`, `family_members`,
    `kids` and `sessions`, each with a green **RLS enabled** badge.
 
-If you ever need to start again, run this first, then run the file again:
+If you ever need to start again, run this first, then run both files again:
 
 ```sql
 drop table if exists public.sessions, public.kids, public.family_members, public.families cascade;
