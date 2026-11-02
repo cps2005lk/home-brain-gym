@@ -12,7 +12,8 @@
     "typecheck": "tsc -b --noEmit",
     "lint": "oxlint",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "types:gen": "supabase gen types typescript --project-id dcrijjdfkecvtvwxvfkg > src/data/database.types.ts"
   },
   "dependencies": {
     "react": "^19.3.1",

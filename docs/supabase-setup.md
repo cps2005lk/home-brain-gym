@@ -62,9 +62,26 @@ it.
   you those steps when we get there).
 - Generate TypeScript types from the real database:
 
+`npx supabase login` does not work from inside a Claude Code session: it wants
+to open a browser and take over the terminal. Use a Personal Access Token
+instead - you make it once and reuse it forever.
+
+1. Dashboard → your account icon (top right) → **Account settings** →
+   **Access Tokens** → **Generate new token**. Name it `home-brain-gym cli`.
+2. Copy it (it is shown only once) and add it to `.env.local`:
+
+```
+SUPABASE_ACCESS_TOKEN=sbp_xxxxxxxxxxxxxxxxxxxx
+```
+
+It is safe there: `.env.local` is git-ignored, and Vite only sends variables
+starting with `VITE_` to the browser, so this one never leaves your Mac.
+**This token is a real secret** - it can change your project. Never commit it.
+
+3. Then regenerate the types any time the schema changes:
+
 ```bash
-npx supabase login
-npx supabase gen types typescript --project-id YOUR-PROJECT-REF > src/data/database.types.ts
+npm run types:gen
 ```
 
 Your project ref is the part in front of `.supabase.co` in the Project URL.
