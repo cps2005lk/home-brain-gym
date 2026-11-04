@@ -513,6 +513,11 @@ input:focus-visible {
   gap: 12px;
   justify-items: center;
   text-align: center;
+  /*
+    Without this the box is only as wide as its content, so a grid inside it
+    has no fixed width to work from: clearing a number made every square move.
+  */
+  width: 100%;
 }
 
 .result .score {
@@ -815,4 +820,20 @@ input:focus-visible {
   .symbol {
     animation: none;
   }
+}
+
+/* ---------- Tap the Order ---------- */
+.cell.number {
+  /* A fixed size, so an empty square is exactly as wide as a full one. */
+  width: 100%;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 1.5rem;
+  color: var(--board-ink);
+  display: grid;
+  place-items: center;
+}
+
+.cell.number.empty {
+  background: #1d2446;
 }

@@ -11,10 +11,14 @@ Row Level Security, and **local-first sync**: a game is saved on the device
 first, queued if the server cannot be reached, and sent automatically when the
 connection returns (`src/data/syncRepository.ts`, `src/data/pendingQueue.ts`).
 
-**Next step: Milestone 9 — new games.** Propose 4-6 age-appropriate games
-(name, skill, one line each) and let him choose which to build. Each new game
-is one folder under `src/games/` (logic.ts + logic.test.ts + view.tsx) plus one
-line in `src/games/index.ts` and one in `src/games/views.tsx`.
+**Next step: Milestone 10 — PWA and deploy.** Make the app installable
+(`vite-plugin-pwa`), deploy to Vercel from GitHub, add the live address to
+Supabase (Auth → URL Configuration) and to Google Cloud (Authorised JavaScript
+origins), then finish the README. Consider lazy-loading `supabase-js` as well:
+the main bundle is ~135 kB gzipped and most of that is the Supabase client.
+
+**Seven games now**, documented in `docs/games.md` together with three ideas
+that were not built (Odd One Out, Stop Go, Shape Shift).
 
 Agreed streak rules (built in M7): a day counts after **2 games**; one missed
 day in any 7 is forgiven; six badges, all about the kid's own play.
@@ -111,5 +115,5 @@ the dev server, not this chat.
 | 6   | Parent view: progress charts per kid per game (days / weeks)                    | done   |
 | 7   | Streaks + badges (propose rules first) + tests                                  | done   |
 | 8   | Daily time limit + settings screen + tests                                      | done   |
-| 9   | New games he chooses — one module each (proves the plug-in design)              |        |
+| 9   | New games he chooses — one module each (proves the plug-in design)              | done   |
 | 10  | PWA + deploy to Vercel + finish README                                          |        |

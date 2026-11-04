@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { createSeededRng } from "../../core/random";
 import { scriptedRng } from "../../core/rng-fakes";
-import { backOne, BACK_ONE_LEVELS, isMatch, MATCH_IN, nextSymbol } from "./logic";
+import {
+  backOne,
+  BACK_ONE_LEVELS,
+  isMatch,
+  MATCH_IN,
+  nextSymbol,
+  type BackOneState,
+} from "./logic";
 
 const anyRng = createSeededRng(31);
 
@@ -144,7 +151,7 @@ describe("Back One play", () => {
   });
 
   it("never drops the score below zero", () => {
-    let state = { ...backOne.create("junior", anyRng, 0), shown: [1, 2] };
+    let state: BackOneState = { ...backOne.create("junior", anyRng, 0), shown: [1, 2] };
     for (let i = 0; i < 3; i += 1) {
       state = backOne.reduce(state, { kind: "answer", input: "same", atMs: 100 }, anyRng);
       state = { ...state, answeredThisStep: false };

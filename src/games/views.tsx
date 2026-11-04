@@ -6,6 +6,7 @@ import { ColorClashView } from "./color-clash/view";
 import { PatternMemoryView } from "./pattern-memory/view";
 import { QuickAddView } from "./quick-add/view";
 import { RuleSwitchView } from "./rule-switch/view";
+import { TapOrderView } from "./tap-order/view";
 
 /**
  * Which React screen draws which game. Adding a game means one line here and
@@ -21,4 +22,5 @@ export const GAME_VIEWS: Record<string, ComponentType<GameViewProps>> = {
   "arrow-rush": ArrowRushView,
   "quick-add": QuickAddView,
   "back-one": BackOneView,
+  "tap-order": TapOrderView,
 };
