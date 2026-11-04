@@ -769,3 +769,8 @@ input:focus-visible {
   font-weight: 800;
   text-align: center;
 }
+
+.sum {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
