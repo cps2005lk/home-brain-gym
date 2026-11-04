@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 import type { GameViewProps } from "../play/types";
 import { ArrowRushView } from "./arrow-rush/view";
+import { BackOneView } from "./back-one/view";
 import { ColorClashView } from "./color-clash/view";
 import { PatternMemoryView } from "./pattern-memory/view";
 import { QuickAddView } from "./quick-add/view";
@@ -19,4 +20,5 @@ export const GAME_VIEWS: Record<string, ComponentType<GameViewProps>> = {
   "rule-switch": RuleSwitchView,
   "arrow-rush": ArrowRushView,
   "quick-add": QuickAddView,
+  "back-one": BackOneView,
 };

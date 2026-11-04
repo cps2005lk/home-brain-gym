@@ -774,3 +774,45 @@ input:focus-visible {
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.04em;
 }
+
+/* ---------- Back One ---------- */
+.symbol {
+  font-size: clamp(4rem, 22vw, 7rem);
+  line-height: 1;
+  animation: pop 0.18s ease-out;
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.82);
+    opacity: 0.4;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.steptimer {
+  width: min(100%, 220px);
+  height: 6px;
+  border-radius: 99px;
+  background: #2b3260;
+  overflow: hidden;
+}
+
+.steptimer i {
+  display: block;
+  height: 100%;
+  background: var(--yellow);
+}
+
+.ans:disabled {
+  opacity: 0.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .symbol {
+    animation: none;
+  }
+}
