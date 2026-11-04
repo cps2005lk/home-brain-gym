@@ -23,4 +23,9 @@ Choices we agreed before writing code. Update this file when a decision changes.
 | PWA                   | Yes, built last (Milestone 10)                                                                                      | Easier to learn once the app works                                                                                           |
 | Repo                  | home-brain-gym, private                                                                                             | Family app                                                                                                                   |
 
-Still open: streak and badge rules (Milestone 7), and which new games to add (Milestone 9).
+Streak and badge rules (Milestone 7): a day counts after 2 games; one missed
+day in any 7 is forgiven; six badges, all about the kid's own play.
+
+New games (Milestone 9): **Quick Add**, **Back One** and **Tap the Order** were
+chosen from six ideas. The three that were not chosen are kept in
+[games.md](./games.md) so we do not lose them.

@@ -2,7 +2,7 @@ import type { LevelId } from "./level";
 import type { Rng } from "./random";
 
 /** The skill a game trains. Another union type instead of an enum. */
-export type SkillTag = "focus" | "memory" | "flexibility" | "attention";
+export type SkillTag = "focus" | "memory" | "flexibility" | "attention" | "numbers" | "speed";
 
 /** The text and look of a game. Everything the home screen needs to draw a tile. */
 export interface GameMeta {
