@@ -22,22 +22,38 @@ About 10 minutes. Everything here is free.
 2. Top left, next to the Google Cloud logo, open the project picker →
    **New project**. Name it `home-brain-gym`. Create, then make sure it is the
    selected project.
-3. Left menu → **APIs & Services** → **OAuth consent screen**.
-   - User type: **External** → Create.
-   - App name: `Home Brain Gym`
-   - User support email: your email
-   - Developer contact email: your email
-   - Save and continue through the next steps.
-4. **Data access** (older dashboards call this _Scopes_) → **Add or remove
-   scopes** → tick these three, then Update and Save:
+3. Left menu → **APIs & Services** → **OAuth consent screen**. Google renamed
+   this area to **Google Auth Platform** in 2025, so you now see either a
+   **Get started** button or four pages: _Branding_, _Audience_, _Data access_,
+   _Clients_.
+
+   **If you see "Get started"**, the wizard has four steps:
+   1. _App Information_: app name `Home Brain Gym`, your support email
+   2. _Audience_: choose **External** (with a normal Gmail account this is the
+      only choice; **Internal** is only for Google Workspace companies)
+   3. _Contact Information_: your email
+   4. _Finish_ → Create
+
+   **If the wizard is already done**, the same settings live in the left menu:
+
+   | Page            | What to set                           |
+   | --------------- | ------------------------------------- |
+   | **Branding**    | app name, support email               |
+   | **Audience**    | External, and the **Test users** list |
+   | **Data access** | the scopes below                      |
+   | **Clients**     | the OAuth client below                |
+
+4. **Data access** → **Add or remove scopes** → tick these three, then Update
+   and Save:
    - `openid`
    - `.../auth/userinfo.email`
    - `.../auth/userinfo.profile`
-5. **Audience** (older dashboards: _Test users_) → **Add users** → add your own
-   Google address. While the app is unpublished, only the addresses listed here
-   can sign in. That is exactly what we want: one family.
-6. Left menu → **Clients** (older dashboards: _Credentials_) → **Create client**
-   → type **Web application**. Name it `home-brain-gym web`.
+5. **Audience** → **Test users** → **Add users** → add your own Google address.
+   While the app is unpublished, only the addresses listed here can sign in.
+   That is exactly what we want: one family. You never need Google's
+   verification review.
+6. **Clients** → **Create client** → type **Web application**. Name it
+   `home-brain-gym web`.
    - **Authorised JavaScript origins** → Add URI:
      ```
      http://localhost:5173
