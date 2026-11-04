@@ -60,7 +60,7 @@ Full brief: `brain-gym-claude-code-prompt.md`. Original prototype: `brain-gym.ht
 | 2   | The 4 games as pure logic + unit tests (no DOM)                                 | done |
 | 3   | Home + "Who is playing?" screens, prototype look, mobile-first                  | done        |
 | 4   | Games playable: countdown, timer, flash, result; saved on device only           | done |
-| 5   | Supabase: schema + RLS, Google sign-in, typed data layer, sync                  |             |
+| 5   | Supabase: schema + RLS, Google sign-in, typed data layer, sync                  | schema, auth, repository done; offline queue to do |
 | 6   | Parent view: progress charts per kid per game (days / weeks)                    |             |
 | 7   | Streaks + badges (propose rules first) + tests                                  |             |
 | 8   | Daily time limit + settings screen + tests                                      |             |
