@@ -8,10 +8,18 @@ interface KidPickerProps {
   readonly lastKidId: string | null;
   readonly onChoose: (kidId: string) => void;
   readonly onEdit: (kid: Kid) => void;
+  readonly onParentArea: () => void;
 }
 
 /** First screen: the kid taps their own tile. No password, no lock. */
-export function KidPicker({ kids, sessions, lastKidId, onChoose, onEdit }: KidPickerProps) {
+export function KidPicker({
+  kids,
+  sessions,
+  lastKidId,
+  onChoose,
+  onEdit,
+  onParentArea,
+}: KidPickerProps) {
   /** Put whoever played last on this device first. */
   const ordered = [...kids].toSorted((a, b) => {
     if (a.id === lastKidId) return -1;
@@ -21,11 +29,16 @@ export function KidPicker({ kids, sessions, lastKidId, onChoose, onEdit }: KidPi
 
   return (
     <>
-      <div>
-        <h1>
-          Who is <span>playing?</span>
-        </h1>
-        <p className="sub">Tap your picture to start.</p>
+      <div className="row">
+        <div className="grow">
+          <h1>
+            Who is <span>playing?</span>
+          </h1>
+          <p className="sub">Tap your picture to start.</p>
+        </div>
+        <button type="button" className="ghost" onClick={onParentArea}>
+          Parent
+        </button>
       </div>
 
       <div className="kids">

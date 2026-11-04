@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "./auth/useAuth";
 import { GUEST_KID } from "./data/defaults";
 import { createLocalRepository } from "./data/localRepository";
 import type { FamilyData, Kid } from "./data/types";
@@ -6,6 +7,7 @@ import { findGame } from "./games";
 import { KidEditor } from "./components/KidEditor";
 import { HomeScreen } from "./screens/HomeScreen";
 import { KidPicker } from "./screens/KidPicker";
+import { ParentScreen } from "./screens/ParentScreen";
 import { PlayScreen } from "./screens/PlayScreen";
 import { statsFor } from "./data/stats";
 import type { FinishedPlay } from "./play/types";
@@ -21,13 +23,15 @@ type Screen =
   | { readonly kind: "picker" }
   | { readonly kind: "home" }
   | { readonly kind: "play"; readonly gameId: string }
-  | { readonly kind: "edit"; readonly kidId: string };
+  | { readonly kind: "edit"; readonly kidId: string }
+  | { readonly kind: "parent" };
 
 export default function App() {
   /** `useState<T | null>` needs the type written, because null alone says nothing. */
   const [data, setData] = useState<FamilyData | null>(null);
   const [kidId, setKidId] = useState<string | null>(null);
   const [screen, setScreen] = useState<Screen>({ kind: "picker" });
+  const auth = useAuth();
 
   /**
    * `useEffect` runs *after* drawing. This one loads the saved family once,
@@ -76,6 +80,10 @@ export default function App() {
     setScreen({ kind: "picker" });
   }
 
+  if (screen.kind === "parent") {
+    return <ParentScreen auth={auth} onBack={backToPicker} />;
+  }
+
   if (screen.kind === "edit") {
     const kid = data.kids.find((item) => item.id === screen.kidId);
     if (kid) {
@@ -118,6 +126,7 @@ export default function App() {
       lastKidId={data.lastKidId}
       onChoose={(id) => void chooseKid(id)}
       onEdit={(kid) => setScreen({ kind: "edit", kidId: kid.id })}
+      onParentArea={() => setScreen({ kind: "parent" })}
     />
   );
 }
