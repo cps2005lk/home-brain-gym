@@ -27,9 +27,11 @@ const isString = (value: unknown): value is string => typeof value === "string";
 const isFiniteNumber = (value: unknown): value is number =>
   typeof value === "number" && Number.isFinite(value);
 
-const isLevel = (value: unknown): value is LevelId => LEVEL_IDS.some((level) => level === value);
-const isAvatar = (value: unknown): value is Avatar => AVATARS.some((item) => item === value);
-const isKidColor = (value: unknown): value is KidColor => KID_COLORS.some((item) => item === value);
+export const isLevel = (value: unknown): value is LevelId =>
+  LEVEL_IDS.some((level) => level === value);
+export const isAvatar = (value: unknown): value is Avatar => AVATARS.some((item) => item === value);
+export const isKidColor = (value: unknown): value is KidColor =>
+  KID_COLORS.some((item) => item === value);
 
 function parseKid(raw: unknown): Kid | null {
   if (!isRecord(raw)) return null;
