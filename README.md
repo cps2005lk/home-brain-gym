@@ -4,6 +4,8 @@ Short "brain agility" games for kids. Each kid plays to beat their **own** best
 score — never a sibling's. Seven games, two levels (Junior and Teen), a parent
 area with progress charts, streaks, badges and a daily time limit.
 
+**Live: <https://home-brain-gym.vercel.app>**
+
 Built end to end in TypeScript, mobile first. It is also a learning project:
 the commit history walks through the whole build, one small milestone at a time.
 
