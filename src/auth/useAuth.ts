@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
-import { isSupabaseConfigured, supabase } from "../data/supabaseClient";
+import { getSupabase, isSupabaseConfigured } from "../data/supabaseClient";
 
 export interface AuthState {
   /** The signed-in parent, or null. */
@@ -29,27 +29,40 @@ export function useAuth(): AuthState {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const client = supabase;
-    if (!client) return;
+    /**
+     * The client is downloaded on demand, so everything here waits for it.
+     * `cancelled` stops us touching React state if the screen closes while we
+     * are still waiting - the async version of cleaning up a subscription.
+     */
+    let cancelled = false;
+    let unsubscribe: (() => void) | null = null;
 
-    // 1. What do we have already (page was reloaded)?
-    void client.auth.getSession().then(({ data }) => {
+    void (async () => {
+      const client = await getSupabase();
+      if (!client || cancelled) return;
+
+      // 1. What do we have already (page was reloaded)?
+      const { data } = await client.auth.getSession();
+      if (cancelled) return;
       setSession(data.session);
       setReady(true);
-    });
 
-    // 2. Then follow every later change: sign in, sign out, token refresh.
-    const { data } = client.auth.onAuthStateChange((_event, nextSession) => {
-      setSession(nextSession);
-      setReady(true);
-    });
+      // 2. Then follow every later change: sign in, sign out, token refresh.
+      const subscription = client.auth.onAuthStateChange((_event, nextSession) => {
+        setSession(nextSession);
+        setReady(true);
+      });
+      unsubscribe = () => subscription.data.subscription.unsubscribe();
+    })();
 
-    // Stop listening when the screen goes away.
-    return () => data.subscription.unsubscribe();
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
   }, []);
 
   const signInWithGoogle = useCallback(async () => {
-    const client = supabase;
+    const client = await getSupabase();
     if (!client) {
       setError("Supabase is not set up on this device yet.");
       return;
@@ -66,7 +79,7 @@ export function useAuth(): AuthState {
   }, []);
 
   const signOut = useCallback(async () => {
-    const client = supabase;
+    const client = await getSupabase();
     if (!client) return;
     const { error: signOutError } = await client.auth.signOut();
     if (signOutError) setError(signOutError.message);

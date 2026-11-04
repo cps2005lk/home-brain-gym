@@ -6,7 +6,7 @@ import { createPendingQueue } from "./data/pendingQueue";
 import type { GymRepository } from "./data/repository";
 import { statsFor } from "./data/stats";
 import { timeLimitStatus } from "./data/timeLimit";
-import { supabase } from "./data/supabaseClient";
+import { getSupabase, isSupabaseConfigured, type GymSupabaseClient } from "./data/supabaseClient";
 import { createSupabaseRepository } from "./data/supabaseRepository";
 import { createSyncRepository, type SyncStatus } from "./data/syncRepository";
 import type { FamilyData, Kid } from "./data/types";
@@ -48,6 +48,23 @@ export default function App() {
   /** When the data was loaded. The charts use this instead of reading the clock. */
   const [loadedAtIso, setLoadedAtIso] = useState("1970-01-01T00:00:00.000Z");
   const auth = useAuth();
+  /**
+   * The Supabase client arrives a moment after the app starts, because it is
+   * downloaded separately. Until then the device copy is used, so the kid
+   * picker appears straight away.
+   */
+  const [client, setClient] = useState<GymSupabaseClient | null>(null);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+    let cancelled = false;
+    void getSupabase().then((loaded) => {
+      if (!cancelled) setClient(loaded);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   /**
    * Signed in -> talk to Supabase. Signed out or no settings -> this device only.
@@ -56,12 +73,12 @@ export default function App() {
    */
   const userId = auth.session?.user.id ?? null;
   const repository = useMemo<GymRepository>(() => {
-    if (!userId || !supabase) return deviceRepository;
+    if (!userId || !client) return deviceRepository;
     // Local-first: the device is written first, the server catches up.
-    const remote = createSupabaseRepository(supabase, deviceRepository);
+    const remote = createSupabaseRepository(client, deviceRepository);
     const queue = createPendingQueue(window.localStorage);
     return createSyncRepository(deviceRepository, remote, queue, setSyncStatus);
-  }, [userId]);
+  }, [userId, client]);
 
   useEffect(() => {
     let cancelled = false;
