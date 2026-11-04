@@ -5,15 +5,14 @@ Full brief: `brain-gym-claude-code-prompt.md`. Original prototype: `brain-gym.ht
 
 ## Where we are now (updated 2026-11-04)
 
-**Working today:** all four games playable on the device, kid picker with avatars,
-scores saved locally, Google sign-in for the parent, and scores stored in Supabase
-Postgres under one family with Row Level Security.
+**Working today:** all four games playable, kid picker with avatars, Google
+sign-in for the parent, scores stored in Supabase Postgres under one family with
+Row Level Security, and **local-first sync**: a game is saved on the device
+first, queued if the server cannot be reached, and sent automatically when the
+connection returns (`src/data/syncRepository.ts`, `src/data/pendingQueue.ts`).
 
-**Next step: Milestone 5c — offline sync.** Today, when signed in, every read and
-write goes straight to Supabase; if the network drops mid-game the score is lost
-(reads fall back to the device and the parent area shows "Working offline").
-5c should: write to the device first, queue writes that did not reach the server,
-and flush the queue when the connection returns. Pure logic, so it gets real tests.
+**Next step: Milestone 6 — the parent progress charts** (scores per kid per
+game, over days and weeks). Recharts is the chosen library.
 
 **Live project facts**
 
@@ -96,16 +95,16 @@ the dev server, not this chat.
 
 ## Roadmap (commit at the end of each)
 
-| #   | Milestone                                                                       | Status                                             |
-| --- | ------------------------------------------------------------------------------- | -------------------------------------------------- |
-| 0   | Repo + tooling: Vite + React + TS strict, Vitest, Prettier, README, GitHub repo | done                                               |
-| 1   | Game contract: `GameModule` interface, level and score types (no UI)            | done                                               |
-| 2   | The 4 games as pure logic + unit tests (no DOM)                                 | done                                               |
-| 3   | Home + "Who is playing?" screens, prototype look, mobile-first                  | done                                               |
-| 4   | Games playable: countdown, timer, flash, result; saved on device only           | done                                               |
-| 5   | Supabase: schema + RLS, Google sign-in, typed data layer, sync                  | schema, auth, repository done; offline queue to do |
-| 6   | Parent view: progress charts per kid per game (days / weeks)                    |                                                    |
-| 7   | Streaks + badges (propose rules first) + tests                                  |                                                    |
-| 8   | Daily time limit + settings screen + tests                                      |                                                    |
-| 9   | New games he chooses — one module each (proves the plug-in design)              |                                                    |
-| 10  | PWA + deploy to Vercel + finish README                                          |                                                    |
+| #   | Milestone                                                                       | Status |
+| --- | ------------------------------------------------------------------------------- | ------ |
+| 0   | Repo + tooling: Vite + React + TS strict, Vitest, Prettier, README, GitHub repo | done   |
+| 1   | Game contract: `GameModule` interface, level and score types (no UI)            | done   |
+| 2   | The 4 games as pure logic + unit tests (no DOM)                                 | done   |
+| 3   | Home + "Who is playing?" screens, prototype look, mobile-first                  | done   |
+| 4   | Games playable: countdown, timer, flash, result; saved on device only           | done   |
+| 5   | Supabase: schema + RLS, Google sign-in, typed data layer, sync                  | done   |
+| 6   | Parent view: progress charts per kid per game (days / weeks)                    |        |
+| 7   | Streaks + badges (propose rules first) + tests                                  |        |
+| 8   | Daily time limit + settings screen + tests                                      |        |
+| 9   | New games he chooses — one module each (proves the plug-in design)              |        |
+| 10  | PWA + deploy to Vercel + finish README                                          |        |

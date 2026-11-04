@@ -33,7 +33,7 @@ export const isAvatar = (value: unknown): value is Avatar => AVATARS.some((item)
 export const isKidColor = (value: unknown): value is KidColor =>
   KID_COLORS.some((item) => item === value);
 
-function parseKid(raw: unknown): Kid | null {
+export function parseKid(raw: unknown): Kid | null {
   if (!isRecord(raw)) return null;
   const { id, familyId, name, level, avatar, color, dailyLimitMinutes } = raw;
   if (!isString(id) || !isString(familyId) || !isString(name)) return null;
@@ -49,7 +49,7 @@ function parseKid(raw: unknown): Kid | null {
   };
 }
 
-function parseSession(raw: unknown): GameSession | null {
+export function parseSession(raw: unknown): GameSession | null {
   if (!isRecord(raw)) return null;
   const { id, kidId, gameId, level, score, detail, playedAt, durationMs } = raw;
   if (!isString(id) || !isString(kidId) || !isString(gameId) || !isString(playedAt)) return null;

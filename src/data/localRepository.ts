@@ -26,10 +26,19 @@ export interface KeyValueStorage {
  * `makeId` is a parameter with a default, so tests can pass predictable ids.
  * Same idea as injecting an IGuidProvider in C#.
  */
+/**
+ * The device copy. It is a GymRepository plus one extra job: it can be
+ * overwritten with a fresh snapshot from the server, so the app still has
+ * real data to show when there is no internet.
+ */
+export interface LocalCache extends GymRepository {
+  replaceAll(data: FamilyData): Promise<void>;
+}
+
 export function createLocalRepository(
   storage: KeyValueStorage,
   makeId: () => string = newId,
-): GymRepository {
+): LocalCache {
   function read(): FamilyData {
     const text = storage.getItem(STORAGE_KEY);
     if (text !== null) {
@@ -83,6 +92,12 @@ export function createLocalRepository(
 
     setLastKid: async (kidId) => {
       change((data) => ({ ...data, lastKidId: kidId }));
+    },
+
+    replaceAll: async (data) => {
+      // Who played last belongs to this device, so the server never overwrites it.
+      const here = read();
+      write({ ...data, lastKidId: here.lastKidId ?? data.lastKidId });
     },
   };
 }

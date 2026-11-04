@@ -2,10 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "./auth/useAuth";
 import { GUEST_KID } from "./data/defaults";
 import { createLocalRepository } from "./data/localRepository";
+import { createPendingQueue } from "./data/pendingQueue";
 import type { GymRepository } from "./data/repository";
 import { statsFor } from "./data/stats";
 import { supabase } from "./data/supabaseClient";
 import { createSupabaseRepository } from "./data/supabaseRepository";
+import { createSyncRepository, type SyncStatus } from "./data/syncRepository";
 import type { FamilyData, Kid } from "./data/types";
 import { findGame } from "./games";
 import { KidEditor } from "./components/KidEditor";
@@ -31,6 +33,7 @@ export default function App() {
   const [kidId, setKidId] = useState<string | null>(null);
   const [screen, setScreen] = useState<Screen>({ kind: "picker" });
   const [syncError, setSyncError] = useState<string | null>(null);
+  const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const auth = useAuth();
 
   /**
@@ -41,7 +44,10 @@ export default function App() {
   const userId = auth.session?.user.id ?? null;
   const repository = useMemo<GymRepository>(() => {
     if (!userId || !supabase) return deviceRepository;
-    return createSupabaseRepository(supabase, deviceRepository);
+    // Local-first: the device is written first, the server catches up.
+    const remote = createSupabaseRepository(supabase, deviceRepository);
+    const queue = createPendingQueue(window.localStorage);
+    return createSyncRepository(deviceRepository, remote, queue, setSyncStatus);
   }, [userId]);
 
   useEffect(() => {
@@ -62,6 +68,18 @@ export default function App() {
     return () => {
       cancelled = true;
     };
+  }, [repository]);
+
+  /**
+   * The browser tells us when the connection comes back. Loading again also
+   * sends anything that was waiting in the queue.
+   */
+  useEffect(() => {
+    const onOnline = (): void => {
+      void repository.loadFamily().then(setData, () => undefined);
+    };
+    window.addEventListener("online", onOnline);
+    return () => window.removeEventListener("online", onOnline);
   }, [repository]);
 
   if (!data) {
@@ -107,7 +125,14 @@ export default function App() {
   }
 
   if (screen.kind === "parent") {
-    return <ParentScreen auth={auth} syncError={syncError} onBack={backToPicker} />;
+    return (
+      <ParentScreen
+        auth={auth}
+        syncError={syncError}
+        syncStatus={syncStatus}
+        onBack={backToPicker}
+      />
+    );
   }
 
   if (screen.kind === "edit") {

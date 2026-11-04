@@ -1,10 +1,13 @@
 import type { AuthState } from "../auth/useAuth";
+import type { SyncStatus } from "../data/syncRepository";
 import { isSupabaseConfigured } from "../data/supabaseClient";
 
 interface ParentScreenProps {
   readonly auth: AuthState;
   /** Set when the app could not reach Supabase and fell back to this device. */
   readonly syncError: string | null;
+  /** How syncing is going, once the parent is signed in. */
+  readonly syncStatus: SyncStatus | null;
   readonly onBack: () => void;
 }
 
@@ -13,7 +16,7 @@ interface ParentScreenProps {
  * and play. Signing in is what turns on syncing between the phone, the tablet
  * and this Mac, and later it unlocks the progress charts and the settings.
  */
-export function ParentScreen({ auth, syncError, onBack }: ParentScreenProps) {
+export function ParentScreen({ auth, syncError, syncStatus, onBack }: ParentScreenProps) {
   const email = auth.session?.user.email ?? null;
 
   return (
@@ -60,10 +63,18 @@ export function ParentScreen({ auth, syncError, onBack }: ParentScreenProps) {
             <span className="label">Signed in as</span>
             <div className="kid-name">{email}</div>
           </div>
-          <p className="sub" style={{ margin: 0 }}>
-            Scores on this device are kept in your family's database, so the phone, the tablet and
-            this computer all show the same history.
-          </p>
+          {syncStatus?.online !== false ? (
+            <p className="sub" style={{ margin: 0 }}>
+              Scores are saved in your family's database, so the phone, the tablet and this computer
+              all show the same history.
+            </p>
+          ) : (
+            <p className="sub" style={{ margin: 0 }}>
+              Working offline. Games are saved on this device.
+              {syncStatus.pending > 0 &&
+                ` ${syncStatus.pending} change${syncStatus.pending === 1 ? "" : "s"} will be sent when the connection is back.`}
+            </p>
+          )}
           <button type="button" className="ghost" onClick={() => void auth.signOut()}>
             Sign out
           </button>
