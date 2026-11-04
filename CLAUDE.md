@@ -3,6 +3,49 @@
 Short brain-agility games for two kids, built mainly to **learn TypeScript**.
 Full brief: `brain-gym-claude-code-prompt.md`. Original prototype: `brain-gym.html` (UTF-16; read it for game rules and look & feel — do not copy its code structure).
 
+## Where we are now (updated 2026-11-04)
+
+**Working today:** all four games playable on the device, kid picker with avatars,
+scores saved locally, Google sign-in for the parent, and scores stored in Supabase
+Postgres under one family with Row Level Security.
+
+**Next step: Milestone 5c — offline sync.** Today, when signed in, every read and
+write goes straight to Supabase; if the network drops mid-game the score is lost
+(reads fall back to the device and the parent area shows "Working offline").
+5c should: write to the device first, queue writes that did not reach the server,
+and flush the queue when the connection returns. Pure logic, so it gets real tests.
+
+**Live project facts**
+
+| Thing                | Value                                                                                                                                                              |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Supabase project ref | `dcrijjdfkecvtvwxvfkg`                                                                                                                                             |
+| Supabase URL         | `https://dcrijjdfkecvtvwxvfkg.supabase.co` (no `/rest/v1` on the end)                                                                                              |
+| Keys                 | publishable `sb_publishable_…` in `.env.local` (git-ignored). The old `anon`/`service_role` names are deprecated                                                   |
+| CLI token            | `SUPABASE_ACCESS_TOKEN` in `.env.local`, read-only scope. `npx supabase login` does **not** work in a Claude Code session (needs a TTY)                            |
+| Regenerate DB types  | `npm run types:gen` (needs the token above)                                                                                                                        |
+| Migrations           | `supabase/migrations/*.sql`, run **by hand** in the Supabase SQL editor. 0001–0005 are applied                                                                     |
+| Auth                 | Google provider enabled; one parent account; Google Cloud project `home-brain-gym`, redirect `https://dcrijjdfkecvtvwxvfkg.supabase.co/auth/v1/callback` |
+| Guides               | `docs/supabase-setup.md`, `docs/google-signin-setup.md`, `docs/decisions.md`                                                                                       |
+
+**Hard-won lessons (do not relearn these)**
+
+- RLS policies run with the **caller's** privileges, so `authenticated` needs
+  `EXECUTE` on any function a policy calls (`is_family_member`) — migration 0003.
+- "Check then create" across the network is a race. React StrictMode runs effects
+  twice, so it created duplicate families. The fix belongs in SQL: `create_family`
+  returns the existing family (0004). In the app, cache the **promise**, not the result.
+- Ids written to Postgres must be real uuids. `"kid-1"` was fine in localStorage
+  and rejected by Postgres.
+- `oxlint` catches real React mistakes (impure render, setState inside an effect,
+  refs read during render). Fix them, do not silence them.
+- Always run `npm run typecheck` as well as `npm test`: Vitest strips types, so a
+  type error can hide behind green tests.
+
+**To start a new session:** say which milestone to continue (for example
+"continue with Milestone 5c"). Nothing else is remembered — not the browser, not
+the dev server, not this chat.
+
 ## Who I work with
 
 - C# / .NET developer from Sri Lanka. English is not his first language — use **simple, clear English**.
@@ -53,16 +96,16 @@ Full brief: `brain-gym-claude-code-prompt.md`. Original prototype: `brain-gym.ht
 
 ## Roadmap (commit at the end of each)
 
-| #   | Milestone                                                                       | Status      |
-| --- | ------------------------------------------------------------------------------- | ----------- |
-| 0   | Repo + tooling: Vite + React + TS strict, Vitest, Prettier, README, GitHub repo | done        |
-| 1   | Game contract: `GameModule` interface, level and score types (no UI)            | done        |
-| 2   | The 4 games as pure logic + unit tests (no DOM)                                 | done |
-| 3   | Home + "Who is playing?" screens, prototype look, mobile-first                  | done        |
-| 4   | Games playable: countdown, timer, flash, result; saved on device only           | done |
+| #   | Milestone                                                                       | Status                                             |
+| --- | ------------------------------------------------------------------------------- | -------------------------------------------------- |
+| 0   | Repo + tooling: Vite + React + TS strict, Vitest, Prettier, README, GitHub repo | done                                               |
+| 1   | Game contract: `GameModule` interface, level and score types (no UI)            | done                                               |
+| 2   | The 4 games as pure logic + unit tests (no DOM)                                 | done                                               |
+| 3   | Home + "Who is playing?" screens, prototype look, mobile-first                  | done                                               |
+| 4   | Games playable: countdown, timer, flash, result; saved on device only           | done                                               |
 | 5   | Supabase: schema + RLS, Google sign-in, typed data layer, sync                  | schema, auth, repository done; offline queue to do |
-| 6   | Parent view: progress charts per kid per game (days / weeks)                    |             |
-| 7   | Streaks + badges (propose rules first) + tests                                  |             |
-| 8   | Daily time limit + settings screen + tests                                      |             |
-| 9   | New games he chooses — one module each (proves the plug-in design)              |             |
-| 10  | PWA + deploy to Vercel + finish README                                          |             |
+| 6   | Parent view: progress charts per kid per game (days / weeks)                    |                                                    |
+| 7   | Streaks + badges (propose rules first) + tests                                  |                                                    |
+| 8   | Daily time limit + settings screen + tests                                      |                                                    |
+| 9   | New games he chooses — one module each (proves the plug-in design)              |                                                    |
+| 10  | PWA + deploy to Vercel + finish README                                          |                                                    |
