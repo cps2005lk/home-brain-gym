@@ -11,11 +11,16 @@ Row Level Security, and **local-first sync**: a game is saved on the device
 first, queued if the server cannot be reached, and sent automatically when the
 connection returns (`src/data/syncRepository.ts`, `src/data/pendingQueue.ts`).
 
-**Next step: Milestone 10 — PWA and deploy.** Make the app installable
-(`vite-plugin-pwa`), deploy to Vercel from GitHub, add the live address to
-Supabase (Auth → URL Configuration) and to Google Cloud (Authorised JavaScript
-origins), then finish the README. Consider lazy-loading `supabase-js` as well:
-the main bundle is ~135 kB gzipped and most of that is the Supabase client.
+**Next step: Milestone 10 — deploy.** Put the app on Vercel from GitHub, add
+the live address to Supabase (Auth → URL Configuration) and to Google Cloud
+(Authorised JavaScript origins), then finish the README. Consider lazy-loading
+`supabase-js`: the main bundle is ~135 kB gzipped, most of it that client.
+
+**No PWA in v1** (decided 2026-11-05). The kids open the app in the phone or
+tablet browser; nothing is installed. Keep it mobile-first, but do not add
+`vite-plugin-pwa` or a service worker. The trade-off: the app files need the
+network to open (the browser cache usually covers a repeat visit), while the
+local-first sync still protects scores once a game has started.
 
 **Seven games now**, documented in `docs/games.md` together with three ideas
 that were not built (Odd One Out, Stop Go, Shape Shift).
@@ -89,7 +94,7 @@ the dev server, not this chat.
 | Kid data              | Only nickname, avatar, level, scores. No birthdates, photos or tracking                                              |
 | Offline               | Yes — device first, sync later                                                                                       |
 | Language              | English only in v1                                                                                                   |
-| PWA                   | Yes, but built **last** (Milestone 10)                                                                               |
+| PWA                   | **No in v1** - a normal web page the kids open in the browser                                                        |
 | Repo                  | `home-brain-gym`, **private**, GitHub user `cps2005lk`                                                               |
 | Still open            | Streak/badge rules (M7) and which new games to add (M9) — propose, let him choose                                    |
 
@@ -116,4 +121,4 @@ the dev server, not this chat.
 | 7   | Streaks + badges (propose rules first) + tests                                  | done   |
 | 8   | Daily time limit + settings screen + tests                                      | done   |
 | 9   | New games he chooses — one module each (proves the plug-in design)              | done   |
-| 10  | PWA + deploy to Vercel + finish README                                          |        |
+| 10  | Deploy to Vercel + finish README (no PWA in v1)                                 |        |
