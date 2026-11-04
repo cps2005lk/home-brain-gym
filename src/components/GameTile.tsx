@@ -7,9 +7,11 @@ interface GameTileProps {
   readonly stats: GameStats;
   /** What to do when the kid taps Play. The parent screen decides. */
   readonly onPlay: () => void;
+  /** True when the daily limit has been reached. */
+  readonly disabled?: boolean;
 }
 
-export function GameTile({ meta, stats, onPlay }: GameTileProps) {
+export function GameTile({ meta, stats, onPlay, disabled = false }: GameTileProps) {
   return (
     <article className="game">
       <header>
@@ -38,7 +40,7 @@ export function GameTile({ meta, stats, onPlay }: GameTileProps) {
         <Sparkline values={stats.recent} />
       </div>
 
-      <button type="button" className="play" onClick={onPlay}>
+      <button type="button" className="play" onClick={onPlay} disabled={disabled}>
         Play {meta.name}
       </button>
     </article>

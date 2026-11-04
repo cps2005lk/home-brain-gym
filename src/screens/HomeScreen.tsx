@@ -1,6 +1,7 @@
 import { LEVELS } from "../core/level";
 import { statsFor } from "../data/stats";
 import { streakInfo } from "../data/streaks";
+import { timeLeftLabel, timeLimitStatus } from "../data/timeLimit";
 import { KID_COLOR_TOKENS, type GameSession, type Kid } from "../data/types";
 import { GAMES } from "../games";
 import { GameTile } from "../components/GameTile";
@@ -15,6 +16,8 @@ interface HomeScreenProps {
 
 export function HomeScreen({ kid, sessions, nowIso, onPlay, onSwitchKid }: HomeScreenProps) {
   const streak = streakInfo(sessions, kid.id, nowIso);
+  const limit = timeLimitStatus(kid, sessions, nowIso);
+  const timeLeft = timeLeftLabel(limit);
   return (
     <>
       <div className="row">
@@ -31,6 +34,7 @@ export function HomeScreen({ kid, sessions, nowIso, onPlay, onSwitchKid }: HomeS
                 · 🔥 {streak.current} day{streak.current === 1 ? "" : "s"}
               </span>
             )}
+            {timeLeft && <span className="goal"> · ⏱ {timeLeft}</span>}
           </div>
         </div>
         <button type="button" className="ghost" onClick={onSwitchKid}>
@@ -51,6 +55,10 @@ export function HomeScreen({ kid, sessions, nowIso, onPlay, onSwitchKid }: HomeS
         </p>
       </div>
 
+      {!limit.canStartGame && (
+        <div className="locked-note">⏱ Time is up for today. See you tomorrow!</div>
+      )}
+
       {/* GAMES comes from the registry, so a new game appears here by itself. */}
       <div className="games">
         {GAMES.map((game) => (
@@ -59,6 +67,7 @@ export function HomeScreen({ kid, sessions, nowIso, onPlay, onSwitchKid }: HomeS
             meta={game.meta}
             stats={statsFor(sessions, kid.id, game.meta.id)}
             onPlay={() => onPlay(game.meta.id)}
+            disabled={!limit.canStartGame}
           />
         ))}
       </div>

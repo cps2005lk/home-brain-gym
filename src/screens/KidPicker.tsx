@@ -1,6 +1,7 @@
 import { LEVELS } from "../core/level";
 import { GUEST_KID } from "../data/defaults";
 import { streakInfo } from "../data/streaks";
+import { timeLeftLabel, timeLimitStatus } from "../data/timeLimit";
 import { KID_COLOR_TOKENS, type GameSession, type Kid } from "../data/types";
 
 interface KidPickerProps {
@@ -48,6 +49,7 @@ export function KidPicker({
       <div className="kids">
         {ordered.map((kid) => {
           const streak = streakInfo(sessions, kid.id, nowIso);
+          const timeLeft = timeLeftLabel(timeLimitStatus(kid, sessions, nowIso));
           return (
             <div key={kid.id} className="row">
               <button type="button" className="kid-tile grow" onClick={() => onChoose(kid.id)}>
@@ -64,6 +66,7 @@ export function KidPicker({
                     )}
                     {LEVELS[kid.level].label}
                   </div>
+                  {timeLeft && <div className="kid-meta">⏱ {timeLeft}</div>}
                   <div className="kid-meta">
                     {streak.todayDone
                       ? "Today is done ✅"

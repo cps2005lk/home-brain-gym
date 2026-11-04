@@ -19,6 +19,8 @@ interface PlayScreenProps {
   /** Everything played so far, used to see which badges this game unlocks. */
   readonly sessions: readonly GameSession[];
   readonly nowIso: string;
+  /** False when the daily limit is reached, so no new game may start. */
+  readonly canPlayAgain: boolean;
   readonly onSave: (play: FinishedPlay) => void;
   readonly onHome: () => void;
 }
@@ -31,6 +33,7 @@ export function PlayScreen({
   previousBest,
   sessions,
   nowIso,
+  canPlayAgain,
   onSave,
   onHome,
 }: PlayScreenProps) {
@@ -107,6 +110,7 @@ export function PlayScreen({
         previousBest={bestBefore}
         wasSaved={!isGuest(kid)}
         newBadges={freshBadges}
+        canPlayAgain={canPlayAgain}
         onPlayAgain={playAgain}
         onHome={onHome}
       />

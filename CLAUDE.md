@@ -11,11 +11,10 @@ Row Level Security, and **local-first sync**: a game is saved on the device
 first, queued if the server cannot be reached, and sent automatically when the
 connection returns (`src/data/syncRepository.ts`, `src/data/pendingQueue.ts`).
 
-**Next step: Milestone 8 — the daily time limit.** The parent sets minutes per
-kid in a settings screen; a running game always finishes and counts, and no new
-game may start after the limit. The day resets at midnight Asia/Colombo
-(`FAMILY_TIME_ZONE` in `src/data/progress.ts`). `kids.daily_limit_minutes`
-already exists in the database and in the `Kid` type.
+**Next step: Milestone 9 — new games.** Propose 4-6 age-appropriate games
+(name, skill, one line each) and let him choose which to build. Each new game
+is one folder under `src/games/` (logic.ts + logic.test.ts + view.tsx) plus one
+line in `src/games/index.ts` and one in `src/games/views.tsx`.
 
 Agreed streak rules (built in M7): a day counts after **2 games**; one missed
 day in any 7 is forgiven; six badges, all about the kid's own play.
@@ -111,6 +110,6 @@ the dev server, not this chat.
 | 5   | Supabase: schema + RLS, Google sign-in, typed data layer, sync                  | done   |
 | 6   | Parent view: progress charts per kid per game (days / weeks)                    | done   |
 | 7   | Streaks + badges (propose rules first) + tests                                  | done   |
-| 8   | Daily time limit + settings screen + tests                                      |        |
+| 8   | Daily time limit + settings screen + tests                                      | done   |
 | 9   | New games he chooses — one module each (proves the plug-in design)              |        |
 | 10  | PWA + deploy to Vercel + finish README                                          |        |

@@ -11,6 +11,8 @@ interface ResultScreenProps {
   readonly wasSaved: boolean;
   /** Badges earned by this very game, if any. */
   readonly newBadges: readonly BadgeId[];
+  /** False once the daily limit is reached: this game still counted, but no more today. */
+  readonly canPlayAgain: boolean;
   readonly onPlayAgain: () => void;
   readonly onHome: () => void;
 }
@@ -31,6 +33,7 @@ export function ResultScreen({
   previousBest,
   wasSaved,
   newBadges,
+  canPlayAgain,
   onPlayAgain,
   onHome,
 }: ResultScreenProps) {
@@ -60,12 +63,15 @@ export function ResultScreen({
         )}
 
         {!wasSaved && <p className="sub">Guest game - this score is not saved.</p>}
+        {!canPlayAgain && <p className="sub">⏱ Time is up for today. See you tomorrow!</p>}
+
         <div className="btnrow">
           <button
             type="button"
             className="play"
             style={{ padding: "12px 22px" }}
             onClick={onPlayAgain}
+            disabled={!canPlayAgain}
           >
             Play again
           </button>

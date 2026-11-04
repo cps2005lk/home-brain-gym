@@ -1,6 +1,7 @@
 import type { AuthState } from "../auth/useAuth";
 import type { SyncStatus } from "../data/syncRepository";
 import type { GameSession, Kid } from "../data/types";
+import { FamilySettings } from "./FamilySettings";
 import { ProgressView } from "./ProgressView";
 import { isSupabaseConfigured } from "../data/supabaseClient";
 
@@ -15,6 +16,7 @@ interface ParentScreenProps {
   /** "Now", measured once when the data was loaded, so drawing stays pure. */
   readonly nowIso: string;
   readonly onDeleteSession: (sessionId: string) => void;
+  readonly onSaveKid: (kid: Kid) => void;
   readonly onBack: () => void;
 }
 
@@ -31,6 +33,7 @@ export function ParentScreen({
   sessions,
   nowIso,
   onDeleteSession,
+  onSaveKid,
   onBack,
 }: ParentScreenProps) {
   const email = auth.session?.user.email ?? null;
@@ -96,6 +99,8 @@ export function ParentScreen({
           </button>
         </div>
       )}
+
+      <FamilySettings kids={kids} sessions={sessions} nowIso={nowIso} onSaveKid={onSaveKid} />
 
       <ProgressView
         kids={kids}

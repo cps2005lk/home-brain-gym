@@ -5,6 +5,7 @@ import { createLocalRepository } from "./data/localRepository";
 import { createPendingQueue } from "./data/pendingQueue";
 import type { GymRepository } from "./data/repository";
 import { statsFor } from "./data/stats";
+import { timeLimitStatus } from "./data/timeLimit";
 import { supabase } from "./data/supabaseClient";
 import { createSupabaseRepository } from "./data/supabaseRepository";
 import { createSyncRepository, type SyncStatus } from "./data/syncRepository";
@@ -112,6 +113,12 @@ export default function App() {
     if (id !== GUEST_KID.id) await repository.setLastKid(id);
   }
 
+  /** Used by the parent settings: save but stay where we are. */
+  async function saveKidKeepingScreen(kid: Kid): Promise<void> {
+    await repository.saveKid(kid);
+    await refresh();
+  }
+
   async function saveKid(kid: Kid): Promise<void> {
     await repository.saveKid(kid);
     await refresh();
@@ -153,6 +160,7 @@ export default function App() {
           sessions={data.sessions}
           nowIso={loadedAtIso}
           onDeleteSession={(sessionId) => void deleteSession(sessionId)}
+          onSaveKid={(kid) => void saveKidKeepingScreen(kid)}
           onBack={backToPicker}
         />
       </Suspense>
@@ -177,6 +185,7 @@ export default function App() {
           kid={currentKid}
           sessions={data.sessions}
           nowIso={loadedAtIso}
+          canPlayAgain={timeLimitStatus(currentKid, data.sessions, loadedAtIso).canStartGame}
           previousBest={statsFor(data.sessions, currentKid.id, game.meta.id).best}
           onSave={(play) => void savePlay(currentKid, play)}
           onHome={() => setScreen({ kind: "home" })}

@@ -742,3 +742,30 @@ input:focus-visible {
   font-weight: 800;
   font-size: 0.9rem;
 }
+
+.setting-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+}
+
+.setting-row:last-of-type {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.play:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.locked-note {
+  background: var(--surface);
+  border: 2px dashed var(--line);
+  border-radius: 16px;
+  padding: 14px 16px;
+  font-weight: 800;
+  text-align: center;
+}
