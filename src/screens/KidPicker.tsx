@@ -1,11 +1,14 @@
 import { LEVELS } from "../core/level";
 import { GUEST_KID } from "../data/defaults";
+import { streakInfo } from "../data/streaks";
 import { KID_COLOR_TOKENS, type GameSession, type Kid } from "../data/types";
 
 interface KidPickerProps {
   readonly kids: readonly Kid[];
   readonly sessions: readonly GameSession[];
   readonly lastKidId: string | null;
+  /** "Now", measured once when the data loaded. */
+  readonly nowIso: string;
   readonly onChoose: (kidId: string) => void;
   readonly onEdit: (kid: Kid) => void;
   readonly onParentArea: () => void;
@@ -16,6 +19,7 @@ export function KidPicker({
   kids,
   sessions,
   lastKidId,
+  nowIso,
   onChoose,
   onEdit,
   onParentArea,
@@ -43,7 +47,7 @@ export function KidPicker({
 
       <div className="kids">
         {ordered.map((kid) => {
-          const plays = sessions.filter((session) => session.kidId === kid.id).length;
+          const streak = streakInfo(sessions, kid.id, nowIso);
           return (
             <div key={kid.id} className="row">
               <button type="button" className="kid-tile grow" onClick={() => onChoose(kid.id)}>
@@ -53,7 +57,17 @@ export function KidPicker({
                 <div className="grow">
                   <div className="kid-name">{kid.name}</div>
                   <div className="kid-meta">
-                    {LEVELS[kid.level].label} · {plays === 0 ? "no games yet" : `${plays} games`}
+                    {streak.current > 0 && (
+                      <span className="streak">
+                        🔥 {streak.current} day{streak.current === 1 ? "" : "s"} ·{" "}
+                      </span>
+                    )}
+                    {LEVELS[kid.level].label}
+                  </div>
+                  <div className="kid-meta">
+                    {streak.todayDone
+                      ? "Today is done ✅"
+                      : `${streak.gamesLeftToday} more game${streak.gamesLeftToday === 1 ? "" : "s"} today`}
                   </div>
                 </div>
               </button>

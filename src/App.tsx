@@ -175,6 +175,8 @@ export default function App() {
         <PlayScreen
           game={game}
           kid={currentKid}
+          sessions={data.sessions}
+          nowIso={loadedAtIso}
           previousBest={statsFor(data.sessions, currentKid.id, game.meta.id).best}
           onSave={(play) => void savePlay(currentKid, play)}
           onHome={() => setScreen({ kind: "home" })}
@@ -188,6 +190,7 @@ export default function App() {
       <HomeScreen
         kid={currentKid}
         sessions={data.sessions}
+        nowIso={loadedAtIso}
         onPlay={(gameId) => setScreen({ kind: "play", gameId })}
         onSwitchKid={backToPicker}
       />
@@ -199,6 +202,7 @@ export default function App() {
       kids={data.kids}
       sessions={data.sessions}
       lastKidId={data.lastKidId}
+      nowIso={loadedAtIso}
       onChoose={(id) => void chooseKid(id)}
       onEdit={(kid) => setScreen({ kind: "edit", kidId: kid.id })}
       onParentArea={() => setScreen({ kind: "parent" })}

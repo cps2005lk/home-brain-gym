@@ -7,6 +7,7 @@ import {
   recentPlays,
   weeklyProgress,
 } from "../data/progress";
+import { BADGES, earnedBadges, streakInfo } from "../data/streaks";
 import { KID_COLOR_TOKENS, type GameSession, type Kid } from "../data/types";
 import { findGame, GAMES } from "../games";
 
@@ -43,6 +44,13 @@ export function ProgressView({ kids, sessions, nowIso, onDeleteSession }: Progre
       : weeklyProgress(sessions, kid.id, gameId, WEEKS, { nowIso });
 
   const summary = gameSummary(sessions, kid.id, gameId);
+  const streak = streakInfo(sessions, kid.id, nowIso);
+  const earned = earnedBadges(
+    sessions,
+    kid.id,
+    GAMES.map((item) => item.meta.id),
+    nowIso,
+  );
   const recent = recentPlays(sessions, kid.id, 10);
   const game = findGame(gameId);
 
@@ -104,6 +112,53 @@ export function ProgressView({ kids, sessions, nowIso, onDeleteSession }: Progre
           >
             Last {WEEKS} weeks
           </button>
+        </div>
+      </div>
+
+      <div className="card">
+        <span className="label">Streak</span>
+        <div className="stats" style={{ marginTop: 4 }}>
+          <span>
+            Now
+            <br />
+            <b>{streak.current > 0 ? `🔥 ${streak.current}` : "–"}</b>
+          </span>
+          <span>
+            Best ever
+            <br />
+            <b>{streak.longest > 0 ? streak.longest : "–"}</b>
+          </span>
+          <span>
+            Today
+            <br />
+            <b>{streak.playsToday} / 2</b>
+          </span>
+        </div>
+        {streak.restDayUsed && (
+          <p className="sub" style={{ margin: "8px 0 0" }}>
+            A missed day this week was forgiven (one rest day per week).
+          </p>
+        )}
+
+        <span className="label" style={{ display: "block", marginTop: 16 }}>
+          Badges
+        </span>
+        <div className="badges">
+          {BADGES.map((badge) => (
+            <div
+              key={badge.id}
+              className={earned.includes(badge.id) ? "badge" : "badge locked"}
+              title={badge.how}
+            >
+              <span className="face" aria-hidden="true">
+                {badge.emoji}
+              </span>
+              <span>
+                <b>{badge.name}</b>
+                <small>{badge.how}</small>
+              </span>
+            </div>
+          ))}
         </div>
       </div>
 

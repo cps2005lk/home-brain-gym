@@ -676,3 +676,69 @@ input:focus-visible {
   padding: 6px 10px;
   min-height: 36px;
 }
+
+/* ---------- streaks and badges ---------- */
+.streak {
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.goal {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.badges {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  padding: 10px;
+}
+
+.badge .face {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.badge b {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.badge small {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.badge.locked {
+  opacity: 0.45;
+}
+
+.badge.locked .face {
+  filter: grayscale(1);
+}
+
+.new-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.new-badge {
+  background: var(--yellow);
+  color: #1b2142;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-weight: 800;
+  font-size: 0.9rem;
+}

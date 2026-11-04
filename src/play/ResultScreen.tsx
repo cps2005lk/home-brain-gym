@@ -1,3 +1,4 @@
+import { badgeById, type BadgeId } from "../data/streaks";
 import type { FinishedPlay } from "./types";
 
 interface ResultScreenProps {
@@ -8,6 +9,8 @@ interface ResultScreenProps {
   /** The kid's best score BEFORE this play. */
   readonly previousBest: number;
   readonly wasSaved: boolean;
+  /** Badges earned by this very game, if any. */
+  readonly newBadges: readonly BadgeId[];
   readonly onPlayAgain: () => void;
   readonly onHome: () => void;
 }
@@ -27,6 +30,7 @@ export function ResultScreen({
   kidName,
   previousBest,
   wasSaved,
+  newBadges,
   onPlayAgain,
   onHome,
 }: ResultScreenProps) {
@@ -42,6 +46,19 @@ export function ResultScreen({
           {play.detail ? ` · ${play.detail}` : ""}
         </p>
         <p style={{ fontWeight: 800, fontSize: "1.15rem" }}>{message(play.score, previousBest)}</p>
+        {newBadges.length > 0 && (
+          <div className="new-badges">
+            {newBadges.map((id) => {
+              const badge = badgeById(id);
+              return badge ? (
+                <span key={id} className="new-badge">
+                  {badge.emoji} {badge.name}
+                </span>
+              ) : null;
+            })}
+          </div>
+        )}
+
         {!wasSaved && <p className="sub">Guest game - this score is not saved.</p>}
         <div className="btnrow">
           <button
