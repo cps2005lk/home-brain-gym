@@ -11,8 +11,9 @@ Row Level Security, and **local-first sync**: a game is saved on the device
 first, queued if the server cannot be reached, and sent automatically when the
 connection returns (`src/data/syncRepository.ts`, `src/data/pendingQueue.ts`).
 
-**Next step: Milestone 6 — the parent progress charts** (scores per kid per
-game, over days and weeks). Recharts is the chosen library.
+**Next step: Milestone 7 — streaks and badges.** Propose the rules first and
+let him choose, then build them as pure logic with tests (see M7 in the
+roadmap). Day boundaries must use `FAMILY_TIME_ZONE` from `src/data/progress.ts`.
 
 **Live project facts**
 
@@ -103,7 +104,7 @@ the dev server, not this chat.
 | 3   | Home + "Who is playing?" screens, prototype look, mobile-first                  | done   |
 | 4   | Games playable: countdown, timer, flash, result; saved on device only           | done   |
 | 5   | Supabase: schema + RLS, Google sign-in, typed data layer, sync                  | done   |
-| 6   | Parent view: progress charts per kid per game (days / weeks)                    |        |
+| 6   | Parent view: progress charts per kid per game (days / weeks)                    | done   |
 | 7   | Streaks + badges (propose rules first) + tests                                  |        |
 | 8   | Daily time limit + settings screen + tests                                      |        |
 | 9   | New games he chooses — one module each (proves the plug-in design)              |        |

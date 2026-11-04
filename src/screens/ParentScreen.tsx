@@ -1,5 +1,7 @@
 import type { AuthState } from "../auth/useAuth";
 import type { SyncStatus } from "../data/syncRepository";
+import type { GameSession, Kid } from "../data/types";
+import { ProgressView } from "./ProgressView";
 import { isSupabaseConfigured } from "../data/supabaseClient";
 
 interface ParentScreenProps {
@@ -8,6 +10,11 @@ interface ParentScreenProps {
   readonly syncError: string | null;
   /** How syncing is going, once the parent is signed in. */
   readonly syncStatus: SyncStatus | null;
+  readonly kids: readonly Kid[];
+  readonly sessions: readonly GameSession[];
+  /** "Now", measured once when the data was loaded, so drawing stays pure. */
+  readonly nowIso: string;
+  readonly onDeleteSession: (sessionId: string) => void;
   readonly onBack: () => void;
 }
 
@@ -16,7 +23,16 @@ interface ParentScreenProps {
  * and play. Signing in is what turns on syncing between the phone, the tablet
  * and this Mac, and later it unlocks the progress charts and the settings.
  */
-export function ParentScreen({ auth, syncError, syncStatus, onBack }: ParentScreenProps) {
+export function ParentScreen({
+  auth,
+  syncError,
+  syncStatus,
+  kids,
+  sessions,
+  nowIso,
+  onDeleteSession,
+  onBack,
+}: ParentScreenProps) {
   const email = auth.session?.user.email ?? null;
 
   return (
@@ -80,6 +96,13 @@ export function ParentScreen({ auth, syncError, syncStatus, onBack }: ParentScre
           </button>
         </div>
       )}
+
+      <ProgressView
+        kids={kids}
+        sessions={sessions}
+        nowIso={nowIso}
+        onDeleteSession={onDeleteSession}
+      />
 
       {syncError && (
         <div className="card">

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { useAuth } from "./auth/useAuth";
 import { GUEST_KID } from "./data/defaults";
 import { createLocalRepository } from "./data/localRepository";
@@ -14,8 +14,18 @@ import { KidEditor } from "./components/KidEditor";
 import type { FinishedPlay } from "./play/types";
 import { HomeScreen } from "./screens/HomeScreen";
 import { KidPicker } from "./screens/KidPicker";
-import { ParentScreen } from "./screens/ParentScreen";
 import { PlayScreen } from "./screens/PlayScreen";
+
+/**
+ * The parent area is loaded only when it is opened.
+ *
+ * It pulls in the chart library, which is big. Kids never open this screen, so
+ * their phone never downloads it. `lazy` + `Suspense` is React's way of saying
+ * "fetch this part later"; Vite then puts it in its own file automatically.
+ */
+const ParentScreen = lazy(() =>
+  import("./screens/ParentScreen").then((module) => ({ default: module.ParentScreen })),
+);
 
 /** Always available: this device's own copy. */
 const deviceRepository = createLocalRepository(window.localStorage);
@@ -34,6 +44,8 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>({ kind: "picker" });
   const [syncError, setSyncError] = useState<string | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
+  /** When the data was loaded. The charts use this instead of reading the clock. */
+  const [loadedAtIso, setLoadedAtIso] = useState("1970-01-01T00:00:00.000Z");
   const auth = useAuth();
 
   /**
@@ -55,6 +67,7 @@ export default function App() {
     const remember = (loaded: FamilyData): void => {
       if (cancelled) return;
       setData(loaded);
+      setLoadedAtIso(new Date().toISOString());
       setSyncError(null); // a good load clears an older problem
     };
 
@@ -119,6 +132,11 @@ export default function App() {
     await refresh();
   }
 
+  async function deleteSession(sessionId: string): Promise<void> {
+    await repository.deleteSession(sessionId);
+    await refresh();
+  }
+
   function backToPicker(): void {
     setKidId(null);
     setScreen({ kind: "picker" });
@@ -126,12 +144,18 @@ export default function App() {
 
   if (screen.kind === "parent") {
     return (
-      <ParentScreen
-        auth={auth}
-        syncError={syncError}
-        syncStatus={syncStatus}
-        onBack={backToPicker}
-      />
+      <Suspense fallback={<p className="sub">Loading…</p>}>
+        <ParentScreen
+          auth={auth}
+          syncError={syncError}
+          syncStatus={syncStatus}
+          kids={data.kids}
+          sessions={data.sessions}
+          nowIso={loadedAtIso}
+          onDeleteSession={(sessionId) => void deleteSession(sessionId)}
+          onBack={backToPicker}
+        />
+      </Suspense>
     );
   }
 
