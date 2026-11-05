@@ -2,18 +2,20 @@ import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { useAuth } from "./auth/useAuth";
 import { GUEST_KID } from "./data/defaults";
 import { createLocalRepository } from "./data/localRepository";
+import { createFamilyAdmin } from "./data/familyAdmin";
 import { createPendingQueue } from "./data/pendingQueue";
 import type { GymRepository } from "./data/repository";
 import { statsFor } from "./data/stats";
 import { timeLimitStatus } from "./data/timeLimit";
 import { getSupabase, isSupabaseConfigured, type GymSupabaseClient } from "./data/supabaseClient";
-import { createSupabaseRepository } from "./data/supabaseRepository";
+import { createSupabaseRepository, findFamilyId, startFamily } from "./data/supabaseRepository";
 import { createSyncRepository, type SyncStatus } from "./data/syncRepository";
 import type { FamilyData, Kid } from "./data/types";
 import { findGame } from "./games";
 import { KidEditor } from "./components/KidEditor";
 import type { FinishedPlay } from "./play/types";
 import { HomeScreen } from "./screens/HomeScreen";
+import { FamilyWelcome } from "./screens/FamilyWelcome";
 import { KidPicker } from "./screens/KidPicker";
 import { PlayScreen } from "./screens/PlayScreen";
 
@@ -37,7 +39,8 @@ type Screen =
   | { readonly kind: "home" }
   | { readonly kind: "play"; readonly gameId: string }
   | { readonly kind: "edit"; readonly kidId: string }
-  | { readonly kind: "parent" };
+  | { readonly kind: "parent" }
+  | { readonly kind: "family" };
 
 export default function App() {
   const [data, setData] = useState<FamilyData | null>(null);
@@ -54,6 +57,12 @@ export default function App() {
    * picker appears straight away.
    */
   const [client, setClient] = useState<GymSupabaseClient | null>(null);
+  /**
+   * The family this parent belongs to. null means "signed in, but not in a
+   * family yet" - a second parent who still has to use their invite code.
+   * undefined means "we have not looked yet".
+   */
+  const [foundFamily, setFoundFamily] = useState<string | null | undefined>(undefined);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -72,13 +81,42 @@ export default function App() {
    * the effect below does not reload on every redraw.
    */
   const userId = auth.session?.user.id ?? null;
+
+  /**
+   * Worked out while drawing, not stored: signed out means "no family" without
+   * any state to reset. Only the answer from the server is kept.
+   */
+  const familyId = client && userId ? foundFamily : undefined;
+
+  /** Ask which family this parent belongs to, without creating one. */
+  useEffect(() => {
+    if (!client || !userId) return;
+    let cancelled = false;
+    void findFamilyId(client).then(
+      (found) => {
+        if (!cancelled) setFoundFamily(found);
+      },
+      () => {
+        if (!cancelled) setFoundFamily(null);
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [client, userId]);
   const repository = useMemo<GymRepository>(() => {
-    if (!userId || !client) return deviceRepository;
+    if (!userId || !client || !familyId) return deviceRepository;
     // Local-first: the device is written first, the server catches up.
-    const remote = createSupabaseRepository(client, deviceRepository);
+    const remote = createSupabaseRepository(client, deviceRepository, familyId);
     const queue = createPendingQueue(window.localStorage);
     return createSyncRepository(deviceRepository, remote, queue, setSyncStatus);
-  }, [userId, client]);
+  }, [userId, client, familyId]);
+
+  /** Inviting and removing parents only exists once we are in a family. */
+  const admin = useMemo(
+    () => (client && familyId ? createFamilyAdmin(client) : null),
+    [client, familyId],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -166,6 +204,25 @@ export default function App() {
     setScreen({ kind: "picker" });
   }
 
+  if (screen.kind === "family" || (screen.kind === "parent" && userId && familyId === null)) {
+    return (
+      <FamilyWelcome
+        email={auth.session?.user.email ?? null}
+        onStartFamily={async () => {
+          if (!client) throw new Error("not connected yet");
+          setFoundFamily(await startFamily(client, deviceRepository));
+          setScreen({ kind: "parent" });
+        }}
+        onJoinFamily={async (code) => {
+          if (!client) throw new Error("not connected yet");
+          setFoundFamily(await createFamilyAdmin(client).acceptInvite(code));
+          setScreen({ kind: "parent" });
+        }}
+        onBack={backToPicker}
+      />
+    );
+  }
+
   if (screen.kind === "parent") {
     return (
       <Suspense fallback={<p className="sub">Loading…</p>}>
@@ -178,6 +235,7 @@ export default function App() {
           nowIso={loadedAtIso}
           onDeleteSession={(sessionId) => void deleteSession(sessionId)}
           onSaveKid={(kid) => void saveKidKeepingScreen(kid)}
+          admin={admin}
           onBack={backToPicker}
         />
       </Suspense>

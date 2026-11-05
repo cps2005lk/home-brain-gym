@@ -18,12 +18,35 @@ function failIf(error: { message: string } | null, what: string): void {
 }
 
 /**
- * The family of the signed-in parent, making it if this is their first ever
- * sign-in. The SQL function does the deciding: if the parent already has a
- * family it returns that one, so calling this twice at the same time can never
- * produce two families. The database is the only place that can settle a race
- * between two devices.
+ * The family this parent already belongs to, or null if they belong to none.
+ *
+ * Nothing is created here. A second parent who is about to join with an invite
+ * code must NOT be given a family of their own first - that would make the
+ * code useless ("you are already in a family").
  */
+export async function findFamilyId(client: Client): Promise<string | null> {
+  const { data, error } = await client
+    .from("family_members")
+    .select("family_id")
+    .order("created_at")
+    .limit(1);
+  failIf(error, "reading your family");
+  return data?.[0]?.family_id ?? null;
+}
+
+/**
+ * Make a family for this parent and copy this device's kids into it.
+ *
+ * The SQL function does the deciding: if the parent already has a family it
+ * returns that one, so calling this twice at the same moment can never make
+ * two families. The database is the only place that can settle that race.
+ */
+export async function startFamily(client: Client, device: GymRepository): Promise<string> {
+  const familyId = await openFamily(client);
+  await seedKids(client, device, familyId);
+  return familyId;
+}
+
 async function openFamily(client: Client): Promise<string> {
   const { data, error } = await client.rpc("create_family", { family_name: "My family" });
   failIf(error, "opening your family");
@@ -63,25 +86,13 @@ async function seedKids(client: Client, device: GymRepository, familyId: string)
  * `device` is the local repository. It still owns one thing that belongs to
  * this device alone: who played last here.
  */
-export function createSupabaseRepository(client: Client, device: GymRepository): GymRepository {
-  /**
-   * The *promise* is remembered, not just the result. If two loads start at
-   * the same moment - React does exactly this in development - the second one
-   * waits for the first instead of starting its own setup.
-   */
-  let opening: Promise<string> | null = null;
-
-  function familyId(): Promise<string> {
-    opening ??= (async () => {
-      const id = await openFamily(client);
-      await seedKids(client, device, id);
-      return id;
-    })().catch((error: unknown) => {
-      opening = null; // a failure must not be remembered forever
-      throw error;
-    });
-    return opening;
-  }
+export function createSupabaseRepository(
+  client: Client,
+  device: GymRepository,
+  /** The family this parent belongs to, found or made before we get here. */
+  family: string,
+): GymRepository {
+  const familyId = (): Promise<string> => Promise.resolve(family);
 
   return {
     loadFamily: async (): Promise<FamilyData> => {

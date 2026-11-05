@@ -26,21 +26,74 @@ export type Database = {
         };
         Relationships: [];
       };
+      family_invites: {
+        Row: {
+          accepted_at: string | null;
+          accepted_by: string | null;
+          code: string;
+          created_at: string;
+          email: string | null;
+          expires_at: string;
+          family_id: string;
+          id: string;
+          invited_by: string;
+          revoked_at: string | null;
+          role: string;
+        };
+        Insert: {
+          accepted_at?: string | null;
+          accepted_by?: string | null;
+          code: string;
+          created_at?: string;
+          email?: string | null;
+          expires_at?: string;
+          family_id: string;
+          id?: string;
+          invited_by: string;
+          revoked_at?: string | null;
+          role?: string;
+        };
+        Update: {
+          accepted_at?: string | null;
+          accepted_by?: string | null;
+          code?: string;
+          created_at?: string;
+          email?: string | null;
+          expires_at?: string;
+          family_id?: string;
+          id?: string;
+          invited_by?: string;
+          revoked_at?: string | null;
+          role?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "family_invites_family_id_fkey";
+            columns: ["family_id"];
+            isOneToOne: false;
+            referencedRelation: "families";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       family_members: {
         Row: {
           created_at: string;
+          email: string | null;
           family_id: string;
           role: string;
           user_id: string;
         };
         Insert: {
           created_at?: string;
+          email?: string | null;
           family_id: string;
           role?: string;
           user_id: string;
         };
         Update: {
           created_at?: string;
+          email?: string | null;
           family_id?: string;
           role?: string;
           user_id?: string;
@@ -152,8 +205,13 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      accept_invite: { Args: { invite_code: string }; Returns: string };
       create_family: { Args: { family_name?: string }; Returns: string };
+      create_invite: { Args: { invite_email?: string }; Returns: string };
       is_family_member: { Args: { target_family: string }; Returns: boolean };
+      max_open_invites: { Args: never; Returns: number };
+      new_invite_code: { Args: never; Returns: string };
+      revoke_invite: { Args: { invite_id: string }; Returns: undefined };
     };
     Enums: {
       level_id: "junior" | "teen";

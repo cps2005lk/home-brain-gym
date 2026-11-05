@@ -837,3 +837,10 @@ input:focus-visible {
 .cell.number.empty {
   background: #1d2446;
 }
+
+.code {
+  font-family: var(--display);
+  font-size: 1.3rem;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}

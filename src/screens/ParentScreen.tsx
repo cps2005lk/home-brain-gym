@@ -1,6 +1,8 @@
 import type { AuthState } from "../auth/useAuth";
 import type { SyncStatus } from "../data/syncRepository";
 import type { GameSession, Kid } from "../data/types";
+import type { FamilyAdmin } from "../data/familyAdmin";
+import { FamilyParents } from "./FamilyParents";
 import { FamilySettings } from "./FamilySettings";
 import { ProgressView } from "./ProgressView";
 import { isSupabaseConfigured } from "../data/supabaseClient";
@@ -17,6 +19,8 @@ interface ParentScreenProps {
   readonly nowIso: string;
   readonly onDeleteSession: (sessionId: string) => void;
   readonly onSaveKid: (kid: Kid) => void;
+  /** Only present once a parent is signed in and belongs to a family. */
+  readonly admin: FamilyAdmin | null;
   readonly onBack: () => void;
 }
 
@@ -34,6 +38,7 @@ export function ParentScreen({
   nowIso,
   onDeleteSession,
   onSaveKid,
+  admin,
   onBack,
 }: ParentScreenProps) {
   const email = auth.session?.user.email ?? null;
@@ -98,6 +103,10 @@ export function ParentScreen({
             Sign out
           </button>
         </div>
+      )}
+
+      {admin && auth.session && (
+        <FamilyParents admin={admin} myUserId={auth.session.user.id} nowIso={nowIso} />
       )}
 
       <FamilySettings kids={kids} sessions={sessions} nowIso={nowIso} onSaveKid={onSaveKid} />
