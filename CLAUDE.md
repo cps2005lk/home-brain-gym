@@ -30,16 +30,16 @@ family silently, or invite codes would always be refused.
 
 **Live project facts**
 
-| Thing                | Value                                                                                                                                                              |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Supabase project ref | `dcrijjdfkecvtvwxvfkg`                                                                                                                                             |
-| Supabase URL         | `https://dcrijjdfkecvtvwxvfkg.supabase.co` (no `/rest/v1` on the end)                                                                                              |
-| Keys                 | publishable `sb_publishable_…` in `.env.local` (git-ignored). The old `anon`/`service_role` names are deprecated                                                   |
-| CLI token            | `SUPABASE_ACCESS_TOKEN` in `.env.local`, read-only scope. `npx supabase login` does **not** work in a Claude Code session (needs a TTY)                            |
-| Regenerate DB types  | `npm run types:gen` (needs the token above)                                                                                                                        |
-| Migrations           | `supabase/migrations/*.sql`, run **by hand** in the Supabase SQL editor. 0001–0005 are applied                                                                     |
+| Thing                | Value                                                                                                                                                    |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Supabase project ref | `dcrijjdfkecvtvwxvfkg`                                                                                                                                   |
+| Supabase URL         | `https://dcrijjdfkecvtvwxvfkg.supabase.co` (no `/rest/v1` on the end)                                                                                    |
+| Keys                 | publishable `sb_publishable_…` in `.env.local` (git-ignored). The old `anon`/`service_role` names are deprecated                                         |
+| CLI token            | `SUPABASE_ACCESS_TOKEN` in `.env.local`, read-only scope. `npx supabase login` does **not** work in a Claude Code session (needs a TTY)                  |
+| Regenerate DB types  | `npm run types:gen` (needs the token above)                                                                                                              |
+| Migrations           | `supabase/migrations/*.sql`, run **by hand** in the Supabase SQL editor. 0001–0005 are applied                                                           |
 | Auth                 | Google provider enabled; one parent account; Google Cloud project `home-brain-gym`, redirect `https://dcrijjdfkecvtvwxvfkg.supabase.co/auth/v1/callback` |
-| Guides               | `docs/supabase-setup.md`, `docs/google-signin-setup.md`, `docs/decisions.md`                                                                                       |
+| Guides               | `docs/supabase-setup.md`, `docs/google-signin-setup.md`, `docs/decisions.md`                                                                             |
 
 **Hard-won lessons (do not relearn these)**
 

@@ -27,3 +27,8 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Local tool files and downloaded credentials - never commit these
+supabase/.temp/
+Reosurces/
+client_secret*.json
