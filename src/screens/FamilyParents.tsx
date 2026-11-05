@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { FamilyAdmin } from "../data/familyAdmin";
+import { inviteLink } from "../data/inviteLink";
 import {
   daysLeft,
   formatInviteCode,
@@ -30,6 +31,21 @@ export function FamilyParents({ admin, myUserId, nowIso }: FamilyParentsProps) {
    * this whenever the list is reloaded.
    */
   const [asOf, setAsOf] = useState(nowIso);
+  /** Which link was just copied, so the button can say so for a moment. */
+  const [copied, setCopied] = useState<string | null>(null);
+
+  /**
+   * The clipboard needs a secure page (https, or localhost) and can still be
+   * refused, so the link is always shown as text as well.
+   */
+  async function copy(link: string, inviteId: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(inviteId);
+    } catch {
+      setError("Could not copy. Select the link below and copy it by hand.");
+    }
+  }
 
   const refresh = useCallback(async () => {
     const [people, codes] = await Promise.all([admin.listParents(), admin.listInvites()]);
@@ -142,22 +158,35 @@ export function FamilyParents({ admin, myUserId, nowIso }: FamilyParentsProps) {
       {open.length > 0 && (
         <ul className="plays">
           {open.map((invite) => (
-            <li key={invite.id}>
-              <span className="grow">
-                <b className="code">{formatInviteCode(invite.code)}</b>
-                <small style={{ display: "block", color: "var(--muted)" }}>
-                  {daysLeft(invite, asOf)} days left
-                  {invite.email ? ` · only for ${invite.email}` : ""}
-                </small>
-              </span>
+            <li key={invite.id} className="invite">
+              <div className="row">
+                <span className="grow">
+                  <b className="code">{formatInviteCode(invite.code)}</b>
+                  <small style={{ display: "block", color: "var(--muted)" }}>
+                    {daysLeft(invite, asOf)} days left
+                    {invite.email ? ` · only for ${invite.email}` : ""}
+                  </small>
+                </span>
+                <button
+                  type="button"
+                  className="ghost"
+                  disabled={busy}
+                  onClick={() => void run(() => admin.revokeInvite(invite.id))}
+                >
+                  Cancel
+                </button>
+              </div>
+
               <button
                 type="button"
-                className="ghost"
-                disabled={busy}
-                onClick={() => void run(() => admin.revokeInvite(invite.id))}
+                className="play"
+                onClick={() =>
+                  void copy(inviteLink(window.location.origin, invite.code), invite.id)
+                }
               >
-                Cancel
+                {copied === invite.id ? "Link copied ✓" : "Copy invite link"}
               </button>
+              <small className="linktext">{inviteLink(window.location.origin, invite.code)}</small>
             </li>
           ))}
         </ul>

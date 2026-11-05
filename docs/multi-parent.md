@@ -132,12 +132,24 @@ plan has no point-in-time restore, so a CSV is the whole safety net.
    only listed addresses may sign in at all. Without this she sees
    "Access blocked: app not verified".
 2. On <https://home-brain-gym.vercel.app> → **Parent** → **Make an invite
-   code**. Send her the code.
-3. She opens the same address on her phone → **Parent** → **Continue with
-   Google** → the app asks whether to start a family or join one → she types
-   the code → **Join this family**.
+   code** → **Copy invite link**. Send her that link (WhatsApp, message, email).
+3. She taps the link on her phone → **Continue with Google** → the code is
+   already filled in → **Join this family**. No typing.
+   (The code is also shown on its own, in case she prefers to type it.)
 4. She now sees the same kids and the same scores. The parent area lists both
    of you.
 
 The code works once, lasts 7 days, and either of you can cancel it before it
 is used.
+
+### How the link survives the sign-in
+
+The link is `.../?join=ZDSZQ8XA`. Signing in sends the browser to Google and
+back to the plain address, so the code would be lost on the way. `main.tsx`
+therefore reads it **before React starts**, keeps it on the device, and tidies
+it out of the address bar so it is not left in the browser history. When the
+parent comes back signed in, the code is waiting, already filled in.
+
+A link carries slightly more risk than a typed code - it can sit in a chat
+history. It is still single use, lasts 7 days, can be cancelled, and can be
+locked to one email address.

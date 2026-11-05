@@ -3,6 +3,7 @@ import { useAuth } from "./auth/useAuth";
 import { GUEST_KID } from "./data/defaults";
 import { createLocalRepository } from "./data/localRepository";
 import { createFamilyAdmin } from "./data/familyAdmin";
+import { forgetInviteCode } from "./data/inviteLink";
 import { createPendingQueue } from "./data/pendingQueue";
 import type { GymRepository } from "./data/repository";
 import { statsFor } from "./data/stats";
@@ -42,10 +43,18 @@ type Screen =
   | { readonly kind: "parent" }
   | { readonly kind: "family" };
 
-export default function App() {
+interface AppProps {
+  /** A code from an invite link, kept on the device across the Google sign-in. */
+  readonly pendingInvite: string | null;
+}
+
+export default function App({ pendingInvite }: AppProps) {
   const [data, setData] = useState<FamilyData | null>(null);
   const [kidId, setKidId] = useState<string | null>(null);
-  const [screen, setScreen] = useState<Screen>({ kind: "picker" });
+  /** An invite link opens the parent area, because that is where signing in is. */
+  const [screen, setScreen] = useState<Screen>(
+    pendingInvite ? { kind: "parent" } : { kind: "picker" },
+  );
   const [syncError, setSyncError] = useState<string | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   /** When the data was loaded. The charts use this instead of reading the clock. */
@@ -111,6 +120,14 @@ export default function App() {
     const queue = createPendingQueue(window.localStorage);
     return createSyncRepository(deviceRepository, remote, queue, setSyncStatus);
   }, [userId, client, familyId]);
+
+  /**
+   * A code that is no use any more (this parent already has a family) should
+   * not sit on the device forever.
+   */
+  useEffect(() => {
+    if (familyId && pendingInvite) forgetInviteCode(window.localStorage);
+  }, [familyId, pendingInvite]);
 
   /** Inviting and removing parents only exists once we are in a family. */
   const admin = useMemo(
@@ -208,14 +225,17 @@ export default function App() {
     return (
       <FamilyWelcome
         email={auth.session?.user.email ?? null}
+        initialCode={pendingInvite ?? ""}
         onStartFamily={async () => {
           if (!client) throw new Error("not connected yet");
           setFoundFamily(await startFamily(client, deviceRepository));
+          forgetInviteCode(window.localStorage);
           setScreen({ kind: "parent" });
         }}
         onJoinFamily={async (code) => {
           if (!client) throw new Error("not connected yet");
           setFoundFamily(await createFamilyAdmin(client).acceptInvite(code));
+          forgetInviteCode(window.localStorage);
           setScreen({ kind: "parent" });
         }}
         onBack={backToPicker}

@@ -3,6 +3,8 @@ import { isLikelyInviteCode, normaliseInviteCode } from "../data/invites";
 
 interface FamilyWelcomeProps {
   readonly email: string | null;
+  /** Filled in already when they arrived through an invite link. */
+  readonly initialCode: string;
   readonly onStartFamily: () => Promise<void>;
   readonly onJoinFamily: (code: string) => Promise<void>;
   readonly onBack: () => void;
@@ -15,8 +17,14 @@ interface FamilyWelcomeProps {
  * in one family. If the app quietly made a family for every new sign-in, the
  * second parent's invite code would always be refused - so we ask first.
  */
-export function FamilyWelcome({ email, onStartFamily, onJoinFamily, onBack }: FamilyWelcomeProps) {
-  const [code, setCode] = useState("");
+export function FamilyWelcome({
+  email,
+  initialCode,
+  onStartFamily,
+  onJoinFamily,
+  onBack,
+}: FamilyWelcomeProps) {
+  const [code, setCode] = useState(initialCode);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,7 +60,9 @@ export function FamilyWelcome({ email, onStartFamily, onJoinFamily, onBack }: Fa
         <div>
           <span className="label">Joining your partner?</span>
           <p style={{ margin: "4px 0 0" }}>
-            Type the invite code they sent you. It looks like <b>K7P4-2RMX</b>.
+            {initialCode
+              ? "Your code is ready below. Just tap the button."
+              : "Type the invite code they sent you. It looks like K7P4-2RMX."}
           </p>
         </div>
         <input
