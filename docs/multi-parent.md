@@ -117,6 +117,10 @@ Nothing in `kids` or `sessions` is touched. The migration only adds a table,
 some functions, policies, a trigger, a column (`family_members.email`) and a
 check constraint, and it is written to be safe to run twice.
 
-Before running it: export `kids` and `sessions` to CSV from the Supabase Table
-Editor, and note `select count(*)` for both. After running it, the counts must
-be identical.
+No backup was taken before running it (5 Nov 2026): at that point the database
+held only test scores, so there was nothing to lose.
+
+**Once the kids really start playing, that changes.** Before any later
+migration: export `kids` and `sessions` to CSV from the Table Editor, note
+`select count(*)` for both, and check the counts again afterwards. The free
+plan has no point-in-time restore, so a CSV is the whole safety net.
