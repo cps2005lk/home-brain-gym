@@ -15,6 +15,12 @@ connection returns (`src/data/syncRepository.ts`, `src/data/pendingQueue.ts`).
 Deployed on Vercel from GitHub `main`; the address is registered in Supabase
 (Auth -> URL Configuration) and Google Cloud (Authorised JavaScript origins).
 
+**Two parents per family is built** (migration 0006, `docs/multi-parent.md`):
+equal parents, invite by code, 7 day expiry, single use, a trigger that refuses
+to remove the last parent, and 13 pgTAP rule tests in `supabase/tests/rls.sql`.
+A new sign-in is asked whether to start a family or join one - never given a
+family silently, or invite codes would always be refused.
+
 **Ideas for version 2**, none started:
 
 - the three games not built yet (Odd One Out, Stop Go, Shape Shift) - see `docs/games.md`

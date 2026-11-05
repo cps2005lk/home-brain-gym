@@ -124,3 +124,20 @@ held only test scores, so there was nothing to lose.
 migration: export `kids` and `sessions` to CSV from the Table Editor, note
 `select count(*)` for both, and check the counts again afterwards. The free
 plan has no point-in-time restore, so a CSV is the whole safety net.
+
+## Adding your wife, step by step
+
+1. **Google Cloud → APIs & Services → Audience → Test users → Add users** and
+   add her Gmail address. The consent screen is External and unpublished, so
+   only listed addresses may sign in at all. Without this she sees
+   "Access blocked: app not verified".
+2. On <https://home-brain-gym.vercel.app> → **Parent** → **Make an invite
+   code**. Send her the code.
+3. She opens the same address on her phone → **Parent** → **Continue with
+   Google** → the app asks whether to start a family or join one → she types
+   the code → **Join this family**.
+4. She now sees the same kids and the same scores. The parent area lists both
+   of you.
+
+The code works once, lasts 7 days, and either of you can cancel it before it
+is used.
