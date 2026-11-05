@@ -174,8 +174,10 @@ security definer
 set search_path = public
 as $$
 declare
-  found      public.family_invites;
-  my_email   text;
+  -- Not called "found": plpgsql already has a special variable with that
+  -- name (set after every query), and shadowing it causes very confusing bugs.
+  invite   public.family_invites;
+  my_email text;
 begin
   if auth.uid() is null then
     raise exception 'not signed in';
@@ -186,39 +188,39 @@ begin
     raise exception 'you are already in a family';
   end if;
 
-  select * into found
+  select * into invite
     from public.family_invites
    where code = upper(trim(invite_code))
    limit 1;
 
-  if found.id is null then
+  if invite.id is null then
     raise exception 'that code does not exist';
   end if;
-  if found.revoked_at is not null then
+  if invite.revoked_at is not null then
     raise exception 'that invite was cancelled';
   end if;
-  if found.accepted_at is not null then
+  if invite.accepted_at is not null then
     raise exception 'that invite was already used';
   end if;
-  if found.expires_at <= now() then
+  if invite.expires_at <= now() then
     raise exception 'that invite has expired';
   end if;
 
   my_email := lower(auth.jwt() ->> 'email');
 
-  if found.email is not null and found.email <> my_email then
+  if invite.email is not null and invite.email <> my_email then
     raise exception 'that invite was made for a different email address';
   end if;
 
   insert into public.family_members (family_id, user_id, role, email)
-  values (found.family_id, auth.uid(), found.role, my_email)
+  values (invite.family_id, auth.uid(), invite.role, my_email)
   on conflict (family_id, user_id) do nothing;
 
   update public.family_invites
      set accepted_at = now(), accepted_by = auth.uid()
-   where id = found.id;
+   where id = invite.id;
 
-  return found.family_id;
+  return invite.family_id;
 end;
 $$;
 

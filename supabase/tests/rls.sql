@@ -13,6 +13,10 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
+-- pgTAP's functions (plan, is, throws_ok...) live in the extensions schema on
+-- Supabase, so they must be on the search path or nothing below is found.
+set local search_path = public, extensions;
+
 select plan(13);
 
 -- ------------------------------------------------------------ the cast
