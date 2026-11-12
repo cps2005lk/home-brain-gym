@@ -1,0 +1,3 @@
+e9dd8507f4bf0c6f42458e41aea833ad0bd3f6127272335eee9bf4d58541ed67  VERSION
+034ff95dd4f47530175ddcf137ff36fd6bd05b5b70674d27524ae07453f92e3f  guardrails/checks/no-claude-md.sh
+88c8320cf9a5fb3667d596fa4040320bc015f6c61379f86bf3d25d8fc03ecd48  guardrails/checks/no-claude-md.test.sh
