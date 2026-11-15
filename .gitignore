@@ -32,3 +32,6 @@ dist-ssr
 supabase/.temp/
 Reosurces/
 client_secret*.json
+
+# Test coverage reports
+coverage/
