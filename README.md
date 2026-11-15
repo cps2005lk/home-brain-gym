@@ -12,7 +12,7 @@ the commit history walks through the whole build, one small milestone at a time.
 |          |                                                 |
 | -------- | ----------------------------------------------- |
 | Frontend | React 19 + Vite + TypeScript (strict)           |
-| Tests    | Vitest — 186 tests, no browser needed           |
+| Tests    | Vitest — 213 tests, no browser needed           |
 | Backend  | Supabase (Postgres + Auth + Row Level Security) |
 | Hosting  | Vercel                                          |
 | Cost     | $0 — everything stays inside free plans         |
@@ -26,7 +26,7 @@ npm run dev     # http://localhost:5173
 
 It works with no backend at all: without `.env.local` everything is saved on
 the device only. To connect your own Supabase project, see
-[docs/supabase-setup.md](./docs/supabase-setup.md).
+[docs/brain/runbooks/supabase-setup.md](./docs/brain/runbooks/supabase-setup.md).
 
 ```bash
 cp .env.example .env.local   # then paste your project URL and publishable key
@@ -61,7 +61,7 @@ src/
   data/      types, repositories, sync, progress maths, streaks, time limit
   styles/    one global stylesheet with the design tokens
 supabase/migrations/   SQL, run by hand in the Supabase SQL editor
-docs/        setup guides, decisions, the game catalogue
+docs/brain/  project knowledge: architecture, decisions, runbooks, games
 ```
 
 Three ideas hold the whole thing together:
@@ -69,7 +69,7 @@ Three ideas hold the whole thing together:
 **1. Game rules are plain TypeScript, with no React.** Every game is a pure
 state machine: `create`, `reduce(state, event)`, `isOver`, `progress`. Time and
 random numbers arrive as _arguments_, never read from the clock or
-`Math.random()` inside the rules. That is why 186 tests run in under a second
+`Math.random()` inside the rules. That is why 213 tests run in under a second
 with no browser.
 
 **2. One repository interface, three implementations.** Screens only ever see
@@ -96,7 +96,7 @@ score to a dropped WiFi.
 4. Add one line to `src/games/index.ts` and one to `src/games/views.tsx`.
 
 That is all. The home screen, charts, streaks, badges and the daily limit pick
-the new game up by themselves. See [docs/games.md](./docs/games.md) for the
+the new game up by themselves. See [docs/brain/games.md](./docs/brain/games.md) for the
 games that exist and the ideas not built yet.
 
 ## The database
@@ -152,7 +152,6 @@ birthdates, no photos, no tracking, no third-party analytics.
 
 ## Notes for whoever picks this up next
 
-[CLAUDE.md](./CLAUDE.md) holds the project context: decisions already made, the
-game rules, the milestone list and the mistakes already paid for — RLS policies
-needing `EXECUTE` on the functions they call, "check then create" races across a
-network, and why ids written to Postgres must be real uuids.
+Start with [AGENTS.md](./AGENTS.md) (the short rules) and
+[docs/brain/README.md](./docs/brain/README.md) (everything else: architecture,
+decisions, runbooks, known issues and the lessons already paid for).

@@ -88,16 +88,4 @@ Your project ref is the part in front of `.supabase.co` in the Project URL.
 
 ## What the schema does
 
-| Table            | What it holds                                                                     |
-| ---------------- | --------------------------------------------------------------------------------- |
-| `families`       | one row per family (the tenant)                                                   |
-| `family_members` | which signed-in parent belongs to which family                                    |
-| `kids`           | nickname, level, avatar, colour, daily limit. No email, no password, no birthdate |
-| `sessions`       | one row per finished game: kid, game, level, score, detail, time, duration        |
-
-Every table has **Row Level Security** on. A request can only see rows whose
-`family_id` belongs to the signed-in parent, so adding other families later
-needs no change to the app code.
-
-`sessions.id` is created by the app when a play ends, so sending the same play
-twice updates one row instead of adding a second one.
+See the data model in [architecture.md](../architecture.md#data-model).

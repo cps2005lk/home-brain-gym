@@ -28,4 +28,4 @@ day in any 7 is forgiven; six badges, all about the kid's own play.
 
 New games (Milestone 9): **Quick Add**, **Back One** and **Tap the Order** were
 chosen from six ideas. The three that were not chosen are kept in
-[games.md](./games.md) so we do not lose them.
+[games.md](../games.md) so we do not lose them.
