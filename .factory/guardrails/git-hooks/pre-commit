@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Factory pre-commit hook: fast checks on every commit.
+# Turn on once per clone:  git config core.hooksPath .factory/guardrails/git-hooks
+# Skipped by: git commit --no-verify. It stops accidents, not decisions.
+
+set -uo pipefail
+checks="$(cd "$(dirname "$0")/../checks" && pwd)"
+root="$(git rev-parse --show-toplevel)"
+status=0
+
+"$checks/no-commit-on-main.sh" || status=1
+"$checks/no-claude-md.sh" "$root" || status=1
+"$checks/no-secrets-staged.sh" || status=1
+
+[[ $status == 0 ]] || echo "pre-commit: blocked. Fix the problems above, then commit again." >&2
+exit $status

@@ -1,3 +1,5 @@
 dist
 node_modules
 brain-gym.html
+# Owned by the factory kit; formatting it would break its checksums
+.factory

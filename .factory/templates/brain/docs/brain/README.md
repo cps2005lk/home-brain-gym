@@ -1,0 +1,17 @@
+# Project brain
+
+Project knowledge for people and agents. `AGENTS.md` holds only the short
+rules; everything else is here. Read the file that fits your task.
+
+| File | Holds | Read it when |
+| --- | --- | --- |
+| [overview.md](overview.md) | Goals, users, scope | Planning a feature |
+| [architecture.md](architecture.md) | Parts, data flow, data model | Changing more than one part, or the data |
+| [glossary.md](glossary.md) | Domain words | A word in a task is unclear |
+| [conventions.md](conventions.md) | Coding rules in detail | Writing or reviewing code |
+| [decisions/](decisions/) | Why things are the way they are | Before changing something that looks odd |
+| [runbooks/](runbooks/) | How to run, test, deploy, migrate, restore | Doing any of those |
+| [known-issues.md](known-issues.md) | Bugs, tech debt, accepted risks | Before fixing or touching a risky area |
+
+Facts marked `> Unverified:` are guesses. Confirm them before relying on them.
+When code changes, update the matching file here in the same pull request.

@@ -1,0 +1,20 @@
+# AGENTS.md
+
+<One line: what this project is.>
+
+## Commands
+
+- Check everything before you finish: `<command>`
+- <Other commands an agent must run, one per line.>
+
+## Rules
+
+- <Hard rules. Only things an agent would get wrong without being told.>
+
+## Surprises
+
+- <Non-standard practices and traps in this project.>
+
+## Read on demand
+
+Project knowledge is in `docs/brain/README.md`. Read the file that fits the task.
