@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Factory pre-push hook: the slower checks, before code leaves this machine.
+# Turn on once per clone:  git config core.hooksPath .factory/guardrails/git-hooks
+# Skipped by: git push --no-verify. It stops accidents, not decisions.
+#
+# The project owns WHAT is checked: an executable scripts/check.sh.
+# The kit owns WHEN: here, before every push.
+
+set -uo pipefail
+checks="$(cd "$(dirname "$0")/../checks" && pwd)"
+root="$(git rev-parse --show-toplevel)"
+
+# git passes the refs to push on stdin; the push-to-main check reads them.
+"$checks/no-push-to-main.sh" || exit 1
+
+project_check="$root/scripts/check.sh"
+if [[ ! -x "$project_check" ]]; then
+  # "Could not check" must never look like "checked and OK".
+  echo "pre-push: blocked. No executable scripts/check.sh in this project, so nothing was checked." >&2
+  exit 2
+fi
+
+echo "pre-push: running scripts/check.sh ..." >&2
+if ! (cd "$root" && "$project_check"); then
+  echo "pre-push: blocked. scripts/check.sh failed." >&2
+  exit 1
+fi
