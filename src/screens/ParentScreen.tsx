@@ -15,7 +15,7 @@ interface ParentScreenProps {
   readonly syncStatus: SyncStatus | null;
   readonly kids: readonly Kid[];
   readonly sessions: readonly GameSession[];
-  /** "Now", measured once when the data was loaded, so drawing stays pure. */
+  /** "Now", refreshed every minute by App, so drawing stays pure. */
   readonly nowIso: string;
   readonly onDeleteSession: (sessionId: string) => void;
   readonly onSaveKid: (kid: Kid) => void;
