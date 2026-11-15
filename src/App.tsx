@@ -57,8 +57,8 @@ export default function App({ pendingInvite }: AppProps) {
   );
   const [syncError, setSyncError] = useState<string | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
-  /** When the data was loaded. The charts use this instead of reading the clock. */
-  const [loadedAtIso, setLoadedAtIso] = useState("1970-01-01T00:00:00.000Z");
+  /** "Now", refreshed every minute. Screens use this instead of reading the clock. */
+  const [nowIso, setNowIso] = useState("1970-01-01T00:00:00.000Z");
   const auth = useAuth();
   /**
    * The Supabase client arrives a moment after the app starts, because it is
@@ -140,7 +140,7 @@ export default function App({ pendingInvite }: AppProps) {
     const remember = (loaded: FamilyData): void => {
       if (cancelled) return;
       setData(loaded);
-      setLoadedAtIso(new Date().toISOString());
+      setNowIso(new Date().toISOString());
       setSyncError(null); // a good load clears an older problem
     };
 
@@ -155,6 +155,26 @@ export default function App({ pendingInvite }: AppProps) {
       cancelled = true;
     };
   }, [repository]);
+
+  /**
+   * Keep "now" fresh. The page may stay open overnight on a tablet. If "now"
+   * stayed at the time of loading, the next morning would still count as
+   * yesterday and the daily limit would say "done" before the first game.
+   * Timers can pause while a device sleeps, so also update when the tab
+   * becomes visible again.
+   */
+  useEffect(() => {
+    const tick = (): void => setNowIso(new Date().toISOString());
+    const onVisible = (): void => {
+      if (document.visibilityState === "visible") tick();
+    };
+    const timer = window.setInterval(tick, 60_000);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, []);
 
   /**
    * The browser tells us when the connection comes back. Loading again also
@@ -252,7 +272,7 @@ export default function App({ pendingInvite }: AppProps) {
           syncStatus={syncStatus}
           kids={data.kids}
           sessions={data.sessions}
-          nowIso={loadedAtIso}
+          nowIso={nowIso}
           onDeleteSession={(sessionId) => void deleteSession(sessionId)}
           onSaveKid={(kid) => void saveKidKeepingScreen(kid)}
           admin={admin}
@@ -279,8 +299,8 @@ export default function App({ pendingInvite }: AppProps) {
           game={game}
           kid={currentKid}
           sessions={data.sessions}
-          nowIso={loadedAtIso}
-          canPlayAgain={timeLimitStatus(currentKid, data.sessions, loadedAtIso).canStartGame}
+          nowIso={nowIso}
+          canPlayAgain={timeLimitStatus(currentKid, data.sessions, nowIso).canStartGame}
           previousBest={statsFor(data.sessions, currentKid.id, game.meta.id).best}
           onSave={(play) => void savePlay(currentKid, play)}
           onHome={() => setScreen({ kind: "home" })}
@@ -294,7 +314,7 @@ export default function App({ pendingInvite }: AppProps) {
       <HomeScreen
         kid={currentKid}
         sessions={data.sessions}
-        nowIso={loadedAtIso}
+        nowIso={nowIso}
         onPlay={(gameId) => setScreen({ kind: "play", gameId })}
         onSwitchKid={backToPicker}
       />
@@ -306,7 +326,7 @@ export default function App({ pendingInvite }: AppProps) {
       kids={data.kids}
       sessions={data.sessions}
       lastKidId={data.lastKidId}
-      nowIso={loadedAtIso}
+      nowIso={nowIso}
       onChoose={(id) => void chooseKid(id)}
       onEdit={(kid) => setScreen({ kind: "edit", kidId: kid.id })}
       onParentArea={() => setScreen({ kind: "parent" })}
