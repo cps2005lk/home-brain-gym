@@ -8,8 +8,7 @@ Home Brain Gym: short brain games for two kids. React + Vite + TypeScript
 - Check everything before you finish: `scripts/check.sh` (build with
   type-check, tests, lint, format). `npm test` alone is not enough: Vitest
   strips types, so type errors hide behind green tests.
-- Once per clone, turn on the git hooks:
-  `git config core.hooksPath .factory/guardrails/git-hooks`
+- Once per clone, turn on the git hooks: `.factory/guardrails/setup-hooks.sh`
   They block commits on `main`, secrets, and pushes that fail `scripts/check.sh`.
 
 ## Rules

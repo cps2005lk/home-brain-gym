@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Tests for the pre-commit and pre-push hooks, in a real repo with a remote.
+# Tests for the pre-commit and pre-push hooks, set up the real way: the kit
+# copied into .factory/, then setup-hooks.sh. A real repo with a remote.
 # Each case answers: does git refuse (blocked) or accept (allowed)?
 set -uo pipefail
 
-hooks="$(cd "$(dirname "$0")" && pwd)"
+guardrails="$(cd "$(dirname "$0")/.." && pwd)"
 fails=0
 expect() { # name, "blocked"|"allowed", git exit code
   local got=allowed; [[ "$3" != 0 ]] && got=blocked
@@ -15,10 +16,11 @@ git init -q --bare -b main "$work/remote.git"
 git init -q -b main "$work/repo"
 cd "$work/repo" || exit 1
 git config user.name t; git config user.email t@example.com
-git config core.hooksPath "$hooks"
 git remote add origin "$work/remote.git"
-mkdir scripts; printf '#!/usr/bin/env bash\nexit 0\n' >scripts/check.sh; chmod +x scripts/check.sh
+mkdir -p .factory scripts; cp -R "$guardrails" .factory/guardrails
+printf '#!/usr/bin/env bash\nexit 0\n' >scripts/check.sh; chmod +x scripts/check.sh
 git add -A; git commit -q --no-verify -m start; git push -q --no-verify origin main 2>/dev/null
+.factory/guardrails/setup-hooks.sh >/dev/null
 
 # pre-commit
 echo a >a.txt; git add a.txt
@@ -42,6 +44,13 @@ git commit -q -am "failing check" 2>/dev/null
 git push -q origin work 2>/dev/null;         expect "push with failing checks" blocked $?
 git rm -q scripts/check.sh; git commit -q -m "no check" 2>/dev/null
 git push -q origin work 2>/dev/null;         expect "push with no scripts/check.sh (could not check)" blocked $?
+
+# A branch without the kit's hooks (found in M6: it used to pass silently)
+git switch -q -c old-branch
+git rm -q -r .factory/guardrails/git-hooks; git commit -q --no-verify -m "no hooks here"
+echo c >c.txt; git add c.txt
+git commit -q -m c 2>/dev/null;              expect "commit on a branch without the kit's hooks" blocked $?
+git push -q origin old-branch 2>/dev/null;   expect "push a branch without the kit's hooks" blocked $?
 
 cd / && rm -rf "$work"
 echo
