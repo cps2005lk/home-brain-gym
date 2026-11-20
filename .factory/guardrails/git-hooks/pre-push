@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Factory pre-push hook: the slower checks, before code leaves this machine.
-# Turn on once per clone:  git config core.hooksPath .factory/guardrails/git-hooks
+# Turn on once per clone:  .factory/guardrails/setup-hooks.sh
 # Skipped by: git push --no-verify. It stops accidents, not decisions.
 #
 # The project owns WHAT is checked: an executable scripts/check.sh.

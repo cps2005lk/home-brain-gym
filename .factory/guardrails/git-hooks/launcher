@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# factory-launcher: copied into .git/hooks/ as pre-commit and pre-push by
+# .factory/guardrails/setup-hooks.sh.
+#
+# .git/hooks/ is the same on every branch, but .factory/ is not. This file
+# runs the kit's hook from the current branch, and BLOCKS if that branch has
+# none, so "no hook here" can never look like "checked and OK".
+
+root="$(git rev-parse --show-toplevel)"
+hook="$root/.factory/guardrails/git-hooks/$(basename "$0")"
+
+if [[ ! -x "$hook" ]]; then
+  echo "factory: this branch has no $(basename "$0") hook in .factory/guardrails/git-hooks/," >&2
+  echo "so nothing was checked. Merge main into this branch to get the kit." >&2
+  echo "(git ... --no-verify skips this, on purpose and at your own risk.)" >&2
+  exit 1
+fi
+
+exec "$hook" "$@"

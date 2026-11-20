@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Factory pre-commit hook: fast checks on every commit.
-# Turn on once per clone:  git config core.hooksPath .factory/guardrails/git-hooks
+# Turn on once per clone:  .factory/guardrails/setup-hooks.sh
 # Skipped by: git commit --no-verify. It stops accidents, not decisions.
 
 set -uo pipefail
