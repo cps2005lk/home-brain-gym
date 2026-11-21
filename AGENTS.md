@@ -12,6 +12,8 @@ Home Brain Gym: short brain games for two kids. React + Vite + TypeScript
   They block commits on `main`, secrets, and pushes that fail `scripts/check.sh`.
 - `.claude/settings.json` checks every shell command an agent runs (factory
   kit). A block is a stop sign: tell the user, don't work around it.
+- Each session writes `docs/usage/<date>-<session>.yml`. Commit new ones with
+  the next PR. `.factory/usage/report.sh` shows them all.
 
 ## Rules
 

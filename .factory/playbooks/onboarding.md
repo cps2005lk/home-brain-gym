@@ -430,7 +430,17 @@ playbook.
 
 Each project keeps its rungs in `docs/brain/trust.md` (template in
 `kit/templates/brain/docs/brain/trust.md`): one row per area, with the proof
-and the date. Count PRs and corrections from the PR history, not from memory.
+and the date. Count PRs and corrections from records, not from memory:
+
+- **Usage log.** The agent hook settings (step 4) also write one file per
+  session, `docs/usage/<date>-<session>.yml`: time, model and tokens from
+  the session transcript. A human adds `task` (in quotes) and `corrections`
+  (a number). One file per session, so branches never conflict.
+- **Report.** `.factory/usage/report.sh` shows all sessions in one table,
+  with the PR of each branch and whether it was merged, and lists the files
+  still waiting for a task or corrections.
+- Commit the new usage files with the next pull request. Until then they
+  are uncommitted changes, and the kit install refuses to run.
 
 ### Legacy .NET track
 
