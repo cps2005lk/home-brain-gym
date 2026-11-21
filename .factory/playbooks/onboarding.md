@@ -335,6 +335,10 @@ server rule is the lock nobody gets past.
    `git push --dry-run --no-verify`. It must be refused before it runs.
    - An "ask" is only as strong as the person who answers. If a rule must
      never be broken, make it a block.
+   - Add `.factory/guardrails/checks/claude-settings-in-sync.sh .` to
+     `scripts/check.sh`. `.claude/settings.json` is the project's file, so a
+     kit update doesn't change it. The check fails when a kit hook is missing
+     or edited there; the project's own settings are allowed.
 
 ### Rules for agents
 

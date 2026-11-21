@@ -9,3 +9,4 @@ npm test --silent         # unit, component and characterization tests
 npm run -s lint           # oxlint
 npm run -s format:check   # Prettier
 .factory/guardrails/checks/no-claude-md.sh .
+.factory/guardrails/checks/claude-settings-in-sync.sh .
