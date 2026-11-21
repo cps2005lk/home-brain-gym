@@ -4,7 +4,7 @@ How to bring an existing project into the factory. Follow the steps in order.
 Each step lists what to find, why, and what it produces.
 
 Steps: 1. Discovery · 2. Brain · 3. Safety net · 4. Guardrails (M6–M7)
-· 5. Trust ladder (M6) · 6. Onboarding report. Steps 1 to 3 are written so far.
+· 5. Trust ladder (M6) · 6. Onboarding report. Steps 1 to 5 are written so far.
 
 ## 1. Discovery
 
@@ -240,3 +240,206 @@ always: **characterize, then change.**
   as the first, smallest change.
 
 Tool facts checked on 2026-11-16 against the linked pages.
+
+## 4. Guardrails
+
+**Goal:** the rules that matter most are *enforced*, not only written. A rule
+in `AGENTS.md` is a request; an agent can forget it or misread it. A check
+that refuses can't be forgotten.
+
+### Three levels
+
+| | Written rule | Local git hook | Server rule |
+| --- | --- | --- | --- |
+| Where | `AGENTS.md` | `.git/hooks/` on each machine | GitHub branch protection + CI |
+| Stops | Nothing; it asks | Accidents, before code leaves the machine | Decisions, for everyone |
+| Skipped by | Forgetting | `--no-verify`, or a clone without hooks | An admin turning it off |
+| Feedback | None | Seconds | Minutes |
+
+Use all three: the written rule explains, the hook gives fast feedback, the
+server rule is the lock nobody gets past.
+
+### Steps
+
+1. **Choose what to enforce.** For each rule in `AGENTS.md`, ask: how bad is
+   it if this is broken once? Enforce the ones with a big blast radius first:
+   secrets, `main`, `CLAUDE.md`. Leave matters of taste as written rules.
+2. **Write `scripts/check.sh`** in the project: build, tests, lint, format,
+   and the kit's checks. **The kit owns *when* checks run (the hooks); the
+   project owns *what* runs (this file).** One file means the hook, CI and a
+   human all run exactly the same checks.
+3. **Turn on the local hooks**, once per clone:
+   `.factory/guardrails/setup-hooks.sh`. Git never copies hooks into a clone,
+   so a clone can't run a stranger's code; the price is that every clone
+   must turn them on. Put the command in `AGENTS.md`.
+   - The setup installs a small *launcher* in `.git/hooks/`. On a branch that
+     doesn't have the kit, the launcher **blocks** with a message. Pointing
+     `core.hooksPath` at a folder in the working tree instead fails
+     *silently*: on a branch without that folder git runs nothing and says
+     nothing.
+4. **Keep the project's tools out of `.factory/`.** A formatter that rewrites
+   kit files breaks the checksums. Example: add `.factory` to
+   `.prettierignore`.
+5. **Add CI** that runs `scripts/check.sh` on every pull request and on
+   `main`. Minimal GitHub Actions file:
+
+   ```yaml
+   name: check
+   on:
+     pull_request:
+     push:
+       branches: [main]
+   permissions:
+     contents: read          # read-only token
+   jobs:
+     check:                  # this name becomes the required check
+       runs-on: ubuntu-latest
+       steps:
+         - uses: actions/checkout@<full commit SHA> # vX.Y.Z
+         - run: scripts/check.sh
+   ```
+
+   - **No secrets in CI** unless a check truly needs one. The smallest world
+     again: an app with no database settings should still build and test.
+   - **Pin actions to a full commit SHA**, with the version in a comment. A
+     tag can be moved to other code later; a SHA can't.
+   - **Read the first log.** Green is not proof: confirm the tests actually
+     ran (for example "232 tests passed"), not zero of them.
+6. **Turn on branch protection for `main`.** This changes repo settings, so
+   the owner decides. Settings that worked for a one-person repo:
+   - require a pull request (0 approvals: GitHub doesn't count your approval
+     of your own PR);
+   - include administrators;
+   - block force pushes and deletion;
+   - require the CI check, tied to the app that runs it (GitHub Actions), so
+     a status posted by hand doesn't count; branch must be up to date.
+   - Watch out: a required check that nothing runs makes every PR wait
+     forever. Add the CI first, let it run once, then require it.
+7. **Prove every lock, both ways.** A check that blocks everything is as
+   useless as one that blocks nothing. For each one: show it **blocks** the
+   bad case and **allows** the good case. The server lock: from a fresh clone
+   (no hooks), push a commit straight to `main`. It must be refused.
+8. **Turn on the agent hook.** Copy
+   `.factory/adapters/claude/settings.json` to `.claude/settings.json` and
+   commit it. Unlike git hooks, this file is cloned, so every clone has it.
+   Before every shell command, Claude Code runs
+   `.factory/guardrails/checks/risky-command.sh`, which answers:
+   - **block**: skipping hooks (`--no-verify`, `git commit -n`,
+     `core.hooksPath`), pushing to `main`, `gh pr merge`;
+   - **ask** (a permission prompt for the human): force-push, `gh api` writes,
+     `gh repo edit`, secrets;
+   - **allow**: everything else.
+
+   On a branch without `.factory/`, the hook blocks every command instead of
+   passing silently. Prove it live: ask the agent to run
+   `git push --dry-run --no-verify`. It must be refused before it runs.
+   - An "ask" is only as strong as the person who answers. If a rule must
+     never be broken, make it a block.
+
+### Rules for agents
+
+- **Never use `--no-verify`.** A blocked hook is a stop sign: report what it
+  said and fix the cause. Skipping a hook is a human decision, made in a
+  terminal, never by an agent.
+- **Never change branch protection or CI settings** without asking.
+- **Could not check is not OK.** A missing script, folder or tool must fail,
+  never pass quietly.
+
+### Known gaps
+
+- `--no-verify` skips the local hooks. The server rule catches it at the PR.
+- An admin can switch the server rule off. That is on purpose (a broken CI
+  must not lock everyone out), but it means the owner holds the last key.
+- Git hooks only see git, and only at commit or push. The agent hook (step 8)
+  sees every shell command before it runs, but not tricks like `"$FLAG"` or
+  a script that runs git itself.
+
+### Legacy .NET track
+
+- **Hooks and `check.sh` don't care about the language.** `scripts/check.sh`
+  runs `dotnet build` and `dotnet test` instead of npm.
+  > Unverified: how the bash hooks run on Windows. Git for Windows ships its
+  > own bash, which should run them. Try it on a Windows clone.
+- **Azure DevOps** has the same server lock as
+  [branch policies](https://learn.microsoft.com/en-us/azure/devops/repos/git/branch-policies):
+  **Build validation** runs a pipeline before a PR can complete. Under
+  "Require a minimum number of reviewers", the option "Allow requestors to
+  approve their own changes" decides whether your own vote counts. People
+  with the "bypass policies" permissions skip everything: give it to as few
+  people as possible.
+
+### Output
+
+- `scripts/check.sh`, the hooks turned on, CI, branch protection.
+- In the onboarding report: which rules are enforced and where, and the proof
+  that each lock blocks and allows.
+
+Sources:
+- GitHub, [About protected branches](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)
+  and [Available rules for rulesets](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets),
+  checked 2026-11-21.
+- Claude Code, [Hooks reference](https://code.claude.com/docs/en/hooks), checked
+  2026-11-21 (Claude Code 2.1.330); block and ask tested live the same day.
+- Microsoft Learn, [Branch policies](https://learn.microsoft.com/en-us/azure/devops/repos/git/branch-policies),
+  checked 2026-11-21.
+- Hooks not cloned, silent `core.hooksPath` pass, server refusal: tested with
+  git 2.52.0 and GitHub, 2026-11-20 and 2026-11-21.
+
+## 5. Trust ladder
+
+**Goal:** an agent gets more freedom only after it has proven it can be
+trusted with less. Like a new driver: a learner's permit first, then driving
+alone, then the highway. Each step needs a test, and a bad mistake takes one
+away.
+
+### The rungs
+
+| Rung | The agent may | To climb to the next rung |
+| --- | --- | --- |
+| **1. Read-only** | Read code, run the build and tests, answer questions, write plans | Onboarding steps 1–4 are done (brain written, every lock proven), and a human checked the agent's findings and found them right |
+| **2. Small PRs** | Branch, commit, push, open a PR. Only in areas whose tests pass a mutation check (step 3). A bug fix starts with a failing test. One area and a small diff per PR. A human reads every line and merges | **5 PRs in a row** merged with no correction after review, CI green on the first push, and no attempt to get around a guardrail |
+| **3. Features** | A change across several files, from a spec a human approved first. The agent writes its own tests. The human reviews the spec and the final PR | Stays here while the same record holds |
+
+A possible rung 4, working unattended with a reviewer agent before the human,
+is not described yet (roles and fleet, M9–M11).
+
+### Trust is per area, not per agent
+
+One agent can be on rung 2 for well-tested logic and on rung 1 for screens
+with thin tests. An area with no mutation-checked tests can't go above
+rung 1, however good the agent's record is: nothing would notice a mistake.
+
+### Going down
+
+**One serious slip drops that area one rung**, until the cause is fixed with
+a new check or rule, not just a promise. Serious slips:
+
+- getting around a guardrail (for example `--no-verify`);
+- stating a guess as a confirmed fact;
+- touching an area or action the rung doesn't allow.
+
+A slip that was caught by a check is the check working, not a slip.
+
+### Always human, on every rung
+
+Merging, repo settings, deploying, the live database, secrets, installing
+software. A rung never includes these; to change this list, change this
+playbook.
+
+### Recording it
+
+Each project keeps its rungs in `docs/brain/trust.md` (template in
+`kit/templates/brain/docs/brain/trust.md`): one row per area, with the proof
+and the date. Count PRs and corrections from the PR history, not from memory.
+
+### Legacy .NET track
+
+The same ladder, in team terms: a new developer gets read access, then small
+reviewed PRs, then a feature. Legacy code usually starts with most areas on
+rung 1, because it has few tests; the safety net (step 3) is what lets an
+area climb.
+
+### Output
+
+- `docs/brain/trust.md` filled in: every area with its rung.
+- In the onboarding report: which areas start on which rung, and why.
