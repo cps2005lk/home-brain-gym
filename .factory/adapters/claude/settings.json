@@ -10,6 +10,17 @@
           }
         ]
       }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "timeout": 10,
+            "command": "h=\"$CLAUDE_PROJECT_DIR/.factory/adapters/claude/session-end.sh\"; if [ -x \"$h\" ]; then exec \"$h\"; fi; echo \"factory: this branch has no .factory/adapters/claude/session-end.sh, so no usage file was written.\" >&2"
+          }
+        ]
+      }
     ]
   }
 }
