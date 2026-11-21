@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "h=\"$CLAUDE_PROJECT_DIR/.factory/adapters/claude/pre-tool-use.sh\"; if [ -x \"$h\" ]; then exec \"$h\"; fi; echo \"factory: this branch has no .factory/adapters/claude/pre-tool-use.sh, so the command was not checked. Ask the user to merge main into this branch.\" >&2; exit 2"
+          }
+        ]
+      }
+    ]
+  }
+}
