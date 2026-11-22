@@ -1,3 +1,4 @@
+import { defineGame } from "../../core/game";
 import type { LevelId } from "../../core/level";
 import type { Rng } from "../../core/random";
 
@@ -110,3 +111,79 @@ export function makeGrid(level: LevelId, rng: Rng): Grid {
     oddIndex,
   };
 }
+
+export interface OddOneOutState {
+  readonly level: LevelId;
+  readonly endsAtMs: number;
+  readonly nowMs: number;
+  readonly grid: Grid;
+  /** When this grid appeared, for the short pause (FR-017). */
+  readonly gridShownAtMs: number;
+  /** Rounds solved: the score. */
+  readonly correct: number;
+  readonly mistakes: number;
+  readonly lastAnswer: "right" | "wrong" | null;
+}
+
+/** The index of the tapped shape. */
+export type OddOneOutInput = number;
+
+const isOddOneOutOver = (state: OddOneOutState): boolean => state.nowMs >= state.endsAtMs;
+
+export const oddOneOut = defineGame<OddOneOutState, OddOneOutInput, OddOneOutLevel>({
+  meta: {
+    id: "odd-one-out",
+    name: "Odd One Out",
+    skill: "attention",
+    skillLabel: "Visual attention",
+    how: "One shape is different. Tap it!",
+    glyph: "◆",
+    accent: "var(--blue)",
+    scoreUnit: "rounds",
+    scoreUnitOne: "round",
+    timed: true,
+  },
+
+  levels: ODD_ONE_OUT_LEVELS,
+
+  create: (level, rng, startedAtMs) => ({
+    level,
+    endsAtMs: startedAtMs + ODD_ONE_OUT_LEVELS[level].seconds * 1000,
+    nowMs: startedAtMs,
+    grid: makeGrid(level, rng),
+    gridShownAtMs: startedAtMs,
+    correct: 0,
+    mistakes: 0,
+    lastAnswer: null,
+  }),
+
+  /** The checks run in the order of data-model.md "State changes". */
+  reduce: (state, event, rng) => {
+    if (isOddOneOutOver(state)) return state;
+    const ticked: OddOneOutState = { ...state, nowMs: event.atMs };
+    if (event.kind === "tick") return ticked;
+    // Time is up: the grid on screen is not counted as right or wrong.
+    if (event.atMs >= state.endsAtMs) return ticked;
+    if (event.atMs < state.gridShownAtMs + NEW_GRID_PAUSE_MS) return ticked;
+    if (event.input < 0 || event.input >= state.grid.shapes.length) return ticked;
+
+    const right = event.input === state.grid.oddIndex;
+    return {
+      ...ticked,
+      correct: right ? state.correct + 1 : state.correct,
+      mistakes: right ? state.mistakes : state.mistakes + 1,
+      lastAnswer: right ? "right" : "wrong",
+      grid: makeGrid(state.level, rng),
+      gridShownAtMs: event.atMs,
+    };
+  },
+
+  isOver: isOddOneOutOver,
+
+  progress: (state) => ({
+    score: state.correct,
+    detail: state.mistakes === 1 ? "1 mistake" : `${state.mistakes} mistakes`,
+    timeLeftMs: Math.max(0, state.endsAtMs - state.nowMs),
+    livesLeft: null,
+  }),
+});
