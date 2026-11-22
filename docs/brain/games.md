@@ -42,8 +42,9 @@ Kept here so we do not lose them.
 ## Rules that apply to every game
 
 - The score only ever compares a kid with **their own** best. Never with a sibling.
-- A game that has started always finishes and always counts, even if the daily
-  limit runs out in the middle.
+- A game that has started is never cut off by the daily limit: it finishes and
+  counts, even if the limit runs out in the middle. Only the kid's own **Stop**
+  throws a game away ([decision 0004](decisions/0004-stop-discards-the-game.md)).
 - Randomness comes from the `Rng` interface, never `Math.random()` directly, so
   tests can feed exact numbers.
 - Time comes in with each event (`atMs`), never from the clock inside the rules.

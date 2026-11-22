@@ -3,3 +3,12 @@ node_modules
 brain-gym.html
 # Owned by the factory kit; formatting it would break its checksums
 .factory
+
+# Spec Kit's own files (tool-owned, like .factory). The constitution is ours.
+.claude/skills
+.specify/templates
+.specify/scripts
+.specify/workflows
+.specify/integrations
+.specify/memory/.constitution-template.json
+.specify/*.json

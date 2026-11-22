@@ -21,9 +21,16 @@ jobs:
       # Actions are pinned to a full commit SHA, not a tag: a tag can be moved
       # to other code later, a SHA can't. The comment says which version it is.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The review gate needs the real branch head (not GitHub's merge
+          # commit) and the full history, to see what changed after a review.
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 26
           cache: npm
       - run: npm ci
       - run: scripts/check.sh
+      # CI only: pushing a half-done branch is fine, merging it unreviewed is not.
+      - run: .factory/guardrails/checks/review-gate.sh
