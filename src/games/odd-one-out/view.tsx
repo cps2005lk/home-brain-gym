@@ -8,8 +8,8 @@ import { oddOneOut, type Shape, type ShapeKind } from "./logic";
 
 /**
  * Every kind fits inside a circle of radius 40 around the centre (50, 50) of a
- * 100 x 100 box. That leaves room for a bigger shape later, so it is never cut
- * off at the edge.
+ * 100 x 100 box. At the bigger scale (1.2) that is radius 48, turned or not,
+ * so a bigger shape is never cut off at the edge (FR-016).
  */
 function KindPath({ kind }: { readonly kind: ShapeKind }) {
   switch (kind) {
@@ -30,11 +30,21 @@ function KindPath({ kind }: { readonly kind: ShapeKind }) {
   }
 }
 
-/** One shape, in one colour for the whole grid (FR-006): `currentColor` from the CSS. */
+/**
+ * One shape, in one colour for the whole grid (FR-006): `currentColor` from the
+ * CSS. Size and turn are a transform around the centre (50, 50). The centre dot
+ * takes the light cell colour, so it shows as a light spot on every kind: the
+ * difference is size, turn or a missing spot, never a colour.
+ */
 function ShapeDrawing({ shape }: { readonly shape: Shape }) {
   return (
     <svg viewBox="0 0 100 100" aria-hidden="true" fill="currentColor">
-      <KindPath kind={shape.kind} />
+      <g
+        transform={`translate(50 50) rotate(${shape.turnDeg}) scale(${shape.scale}) translate(-50 -50)`}
+      >
+        <KindPath kind={shape.kind} />
+        {shape.dot && <circle cx="50" cy="50" r="6" style={{ fill: "var(--board-ink)" }} />}
+      </g>
     </svg>
   );
 }
