@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createSeededRng } from "../../core/random";
 import { scriptedRng } from "../../core/rng-fakes";
+import { findGame } from "../index";
 import {
   NEW_GRID_PAUSE_MS,
   ODD_ONE_OUT_LEVELS,
@@ -156,6 +157,10 @@ describe("Odd One Out game", () => {
       timed: true,
     });
     expect(oddOneOut.levels).toBe(ODD_ONE_OUT_LEVELS);
+  });
+
+  it("is in the game registry", () => {
+    expect(findGame("odd-one-out")).toBe(oddOneOut);
   });
 
   it("starts a Junior game with 45 seconds and the first grid", () => {
