@@ -131,6 +131,28 @@ describe("Odd One Out screen", () => {
 
     expect(container.querySelector(".flash")).toBeNull();
   });
+
+  it("draws 16 Teen shapes in 4 columns, exactly one drawn differently (FR-016)", () => {
+    const { container } = render(
+      <OddOneOutView kid={{ ...KID, level: "teen" }} onFinish={vi.fn()} onQuit={vi.fn()} />,
+    );
+
+    const buttons = shapeButtons();
+    expect(buttons.map((button) => button.getAttribute("aria-label"))).toEqual(
+      Array.from({ length: 16 }, (_, index) => `Shape ${index + 1}`),
+    );
+
+    const grid = container.querySelector<HTMLElement>(".grid");
+    expect(grid).not.toBeNull();
+    expect(grid?.style.gridTemplateColumns).toBe("repeat(4, 1fr)");
+    for (const button of buttons) expect(grid?.contains(button)).toBe(true);
+
+    const drawings = buttons.map((button) => button.innerHTML);
+    const differs = drawings.filter(
+      (drawing) => drawings.filter((other) => other === drawing).length === 1,
+    );
+    expect(differs).toHaveLength(1);
+  });
 });
 
 /**
