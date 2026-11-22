@@ -7,6 +7,9 @@
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Kid } from "../../data/types";
+import { PlayScreen } from "../../screens/PlayScreen";
+import { findGame } from "../index";
+import { GAME_VIEWS } from "../views";
 import { oddOneOut, type OddOneOutState } from "./logic";
 import { OddOneOutView } from "./view";
 
@@ -33,28 +36,28 @@ const shapeButtons = (): HTMLElement[] => screen.getAllByRole("button", { name: 
 
 const counted = (state: OddOneOutState): number => state.correct + state.mistakes;
 
+beforeEach(() => {
+  vi.useFakeTimers({
+    toFake: [
+      "setTimeout",
+      "clearTimeout",
+      "setInterval",
+      "clearInterval",
+      "requestAnimationFrame",
+      "cancelAnimationFrame",
+      "performance",
+      "Date",
+    ],
+  });
+});
+
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+  vi.useRealTimers();
+});
+
 describe("Odd One Out screen", () => {
-  beforeEach(() => {
-    vi.useFakeTimers({
-      toFake: [
-        "setTimeout",
-        "clearTimeout",
-        "setInterval",
-        "clearInterval",
-        "requestAnimationFrame",
-        "cancelAnimationFrame",
-        "performance",
-        "Date",
-      ],
-    });
-  });
-
-  afterEach(() => {
-    cleanup();
-    vi.restoreAllMocks();
-    vi.useRealTimers();
-  });
-
   const renderJunior = () =>
     render(<OddOneOutView kid={KID} onFinish={vi.fn()} onQuit={vi.fn()} />);
 
@@ -127,5 +130,57 @@ describe("Odd One Out screen", () => {
     fireEvent.click(screen.getByRole("button", { name: "Shape 1" }));
 
     expect(container.querySelector(".flash")).toBeNull();
+  });
+});
+
+/**
+ * The game inside the shared play screen. The saved row is what the streak,
+ * progress and own-best code read, so it is this game's link to those rules.
+ */
+describe("Odd One Out in the play screen", () => {
+  const renderPlayScreen = () => {
+    const game = findGame("odd-one-out");
+    if (!game) throw new Error("odd-one-out game is missing");
+    const onSave = vi.fn();
+    const onHome = vi.fn();
+    render(
+      <PlayScreen
+        game={game}
+        kid={KID}
+        previousBest={0}
+        sessions={[]}
+        nowIso="2026-11-16T04:00:00.000Z"
+        canPlayAgain
+        onSave={onSave}
+        onHome={onHome}
+      />,
+    );
+    return { onSave, onHome };
+  };
+
+  it("uses the views.tsx entry", () => {
+    expect(GAME_VIEWS["odd-one-out"]).toBe(OddOneOutView);
+  });
+
+  it("goes home without saving when the kid presses Stop (decision 0004)", async () => {
+    const { onSave, onHome } = renderPlayScreen();
+    // Past the 3-2-1 countdown.
+    await advance(4000, 200);
+
+    fireEvent.click(screen.getByText("Stop"));
+
+    expect(onHome).toHaveBeenCalledTimes(1);
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it("saves the finished Junior game with its id, score and mistakes", async () => {
+    const { onSave } = renderPlayScreen();
+    // Countdown (2.4 s) plus the 45 s game, with time to spare.
+    await advance(50000, 250);
+
+    expect(onSave).toHaveBeenCalledTimes(1);
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ gameId: "odd-one-out", score: 0, detail: "0 mistakes" }),
+    );
   });
 });
