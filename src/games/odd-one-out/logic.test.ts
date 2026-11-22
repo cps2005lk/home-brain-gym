@@ -7,6 +7,7 @@ import {
   ODD_ONE_OUT_LEVELS,
   SHAPE_KINDS,
   SYMMETRY_DEG,
+  changesFor,
   makeGrid,
   oddOneOut,
   sameShape,
@@ -142,6 +143,105 @@ describe("makeGrid at Junior", () => {
   });
 });
 
+describe("changesFor (FR-016)", () => {
+  const teen = ODD_ONE_OUT_LEVELS.teen;
+
+  it("never turns a circle", () => {
+    expect(changesFor("circle", teen)).toEqual(["bigger", "smaller", "no-dot"]);
+  });
+
+  it("allows all four changes for the other kinds at a 20 degree turn", () => {
+    for (const kind of ["square", "triangle", "star", "heart"] as const) {
+      expect(changesFor(kind, teen)).toEqual(["bigger", "smaller", "turned", "no-dot"]);
+    }
+  });
+
+  it("leaves out a turn that maps the shape onto itself", () => {
+    expect(changesFor("square", { ...teen, turnDeg: 90 })).toEqual(["bigger", "smaller", "no-dot"]);
+    expect(changesFor("star", { ...teen, turnDeg: 72 })).toEqual(["bigger", "smaller", "no-dot"]);
+    expect(changesFor("triangle", { ...teen, turnDeg: 120 })).toEqual([
+      "bigger",
+      "smaller",
+      "no-dot",
+    ]);
+  });
+});
+
+describe("makeGrid at Teen", () => {
+  const teen = ODD_ONE_OUT_LEVELS.teen;
+
+  it("rolls the odd place, the kind, then the change", () => {
+    // 7 -> place 7; 1 -> square; 2 -> third of [bigger, smaller, turned, no-dot]
+    const grid = makeGrid("teen", scriptedRng([7, 1, 2]));
+    expect(grid.oddIndex).toBe(7);
+    for (const shape of grid.shapes) expect(shape.kind).toBe("square");
+    expect(oddShape(grid)).toEqual({ kind: "square", scale: 1, turnDeg: 20, dot: true });
+  });
+
+  it("counts the change over the changes allowed for the kind", () => {
+    // 0 -> circle; 2 -> third of [bigger, smaller, no-dot]
+    const grid = makeGrid("teen", scriptedRng([0, 0, 2]));
+    expect(commonShape(grid).kind).toBe("circle");
+    expect(oddShape(grid)).toEqual({ kind: "circle", scale: 1, turnDeg: 0, dot: false });
+  });
+
+  it("draws the common Teen shape at normal size, not turned, with a dot", () => {
+    const grid = makeGrid("teen", scriptedRng([7, 1, 2]));
+    expect(commonShape(grid)).toEqual({ kind: "square", scale: 1, turnDeg: 0, dot: true });
+  });
+
+  it("makes the odd shape bigger by the level's bigger scale", () => {
+    const grid = makeGrid("teen", scriptedRng([3, 1, 0]));
+    expect(oddShape(grid)).toEqual({
+      kind: "square",
+      scale: teen.biggerScale,
+      turnDeg: 0,
+      dot: true,
+    });
+    expect(teen.biggerScale).toBe(1.2);
+  });
+
+  it("makes the odd shape smaller by the level's smaller scale", () => {
+    const grid = makeGrid("teen", scriptedRng([3, 1, 1]));
+    expect(oddShape(grid)).toEqual({ kind: "square", scale: 0.82, turnDeg: 0, dot: true });
+  });
+
+  it("turns the odd shape by the level's turn", () => {
+    const grid = makeGrid("teen", scriptedRng([3, 1, 2]));
+    expect(oddShape(grid)).toEqual({ kind: "square", scale: 1, turnDeg: 20, dot: true });
+  });
+
+  it("takes the dot away from the odd shape", () => {
+    const grid = makeGrid("teen", scriptedRng([3, 1, 3]));
+    expect(oddShape(grid)).toEqual({ kind: "square", scale: 1, turnDeg: 0, dot: false });
+  });
+
+  it("always has 16 shapes of one kind with exactly one small change (SC-001)", () => {
+    for (let seed = 1; seed <= 500; seed += 1) {
+      const grid = makeGrid("teen", createSeededRng(seed));
+      expect(grid.shapes).toHaveLength(16);
+      expect(grid.oddIndex).toBeGreaterThanOrEqual(0);
+      expect(grid.oddIndex).toBeLessThan(16);
+
+      const common = commonShape(grid);
+      const odd = oddShape(grid);
+      grid.shapes.forEach((shape, index) => {
+        if (index !== grid.oddIndex) expect(sameShape(shape, common)).toBe(true);
+      });
+      expect(sameShape(odd, common)).toBe(false);
+      expect(odd.kind).toBe(common.kind);
+
+      const fieldsThatDiffer = [
+        odd.scale !== common.scale,
+        odd.turnDeg !== common.turnDeg,
+        odd.dot !== common.dot,
+      ].filter(Boolean);
+      expect(fieldsThatDiffer).toHaveLength(1);
+      if (odd.kind === "circle") expect(odd.turnDeg).toBe(0);
+    }
+  });
+});
+
 describe("Odd One Out game", () => {
   it("has its meta and levels", () => {
     expect(oddOneOut.meta).toEqual({
@@ -175,6 +275,14 @@ describe("Odd One Out game", () => {
       mistakes: 0,
       lastAnswer: null,
     });
+  });
+
+  it("starts a Teen game with 30 seconds and a 16-shape grid", () => {
+    const state = oddOneOut.create("teen", scriptedRng([7, 1, 2]), 1000);
+    expect(state.endsAtMs).toBe(31000);
+    expect(state.grid.shapes).toHaveLength(16);
+    // The Teen grid from these rolls: a turned square among squares.
+    expect(oddShape(state.grid)).toEqual({ kind: "square", scale: 1, turnDeg: 20, dot: true });
   });
 });
 
