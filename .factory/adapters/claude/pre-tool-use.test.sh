@@ -22,7 +22,11 @@ expect() { # name, wanted exit, wanted stdout pattern ("" = empty), stdin
 expect "allowed command: exit 0, no output"   0 "" "$(bash_json 'npm test')"
 expect "blocked command: exit 2"              2 "" "$(bash_json 'git push --no-verify')"
 expect "ask: exit 0 with ask JSON"            0 '"permissionDecision": "ask"' "$(bash_json 'git push --force origin fix')"
-expect "not a Bash tool: exit 0"              0 "" '{"tool_name":"Edit","tool_input":{"file_path":"a.ts"}}'
+expect "Edit another file: exit 0"              0 "" '{"tool_name":"Edit","tool_input":{"file_path":"/p/specs/001-x/spec.md"}}'
+expect "Edit review.md: blocked"               2 "" '{"tool_name":"Edit","tool_input":{"file_path":"/p/specs/001-x/review.md"}}'
+expect "Write review.md: blocked"              2 "" '{"tool_name":"Write","tool_input":{"file_path":"specs/001-x/review.md"}}'
+expect "Write review.md.bak: allowed"         0 "" '{"tool_name":"Write","tool_input":{"file_path":"specs/001-x/review.md.bak"}}'
+expect "a non-file tool: exit 0"               0 "" '{"tool_name":"Read","tool_input":{"file_path":"specs/001-x/review.md"}}'
 expect "bad JSON: blocked"                    2 "" 'not json'
 expect "Bash without a command: blocked"      2 "" '{"tool_name":"Bash","tool_input":{}}'
 
@@ -42,6 +46,10 @@ CLAUDE_PROJECT_DIR="$tmp" bash -c "$hook_cmd" <<<"$(bash_json 'npm test')" >/dev
 [[ $? == 0 ]] && pass "with .factory: allowed command passes" || fail "with .factory: allowed" "want exit 0"
 CLAUDE_PROJECT_DIR="$tmp" bash -c "$hook_cmd" <<<"$(bash_json 'git commit -n -m x')" >/dev/null 2>&1
 [[ $? == 2 ]] && pass "with .factory: blocked command blocks" || fail "with .factory: blocked" "want exit 2"
+CLAUDE_PROJECT_DIR="$tmp" bash -c "$hook_cmd" <<<'{"tool_name":"Write","tool_input":{"file_path":"specs/x/review.md"}}' >/dev/null 2>&1
+[[ $? == 2 ]] && pass "with .factory: Write to review.md blocks" || fail "with .factory: Write to review.md" "want exit 2"
+m="$(jq -r '.hooks.PreToolUse[0].matcher' "$here/settings.json")"
+for tool in Bash Edit Write; do [[ "|$m|" == *"|$tool|"* ]] || fail "matcher covers $tool" "matcher is $m"; done && pass "the matcher covers Bash, Edit and Write"
 
 echo
 [[ $fails == 0 ]] && echo "All tests passed." || { echo "$fails test(s) failed."; exit 1; }

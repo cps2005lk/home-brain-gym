@@ -34,6 +34,10 @@ perl -e '
 
   my (@block, @ask);
 
+  # The review record is written only by review.sh, never by an agent.
+  my $rv = qr{(?:^|/)review\.md\b};
+  push @block, "review.md is written only by review.sh: an agent must not change a review." if $cmd =~ />\|?\s*\S*$rv/;
+
   # 2. Split into simple commands: ; && || | newlines, $( ), backticks, ( ).
   for my $part (split /\|\||&&|[;|\n`()]|\$\(/, $cmd) {
     my @t = grep { length } split /\s+/, $part;
@@ -42,7 +46,9 @@ perl -e '
     (my $prog = $t[0]) =~ s{.*/}{};
 
     push @block, "--no-verify skips the git hooks." if grep { /^--no-verify$/ } @t;
-    push @block, "core.hooksPath changes which git hooks run." if grep { /core\.hookspath/i } @t;
+    if ($prog =~ /^(tee|cp|mv|rm|truncate|dd)$/ || ($prog =~ /^(sed|perl)$/ && grep { /^-i/ || /^-pi$/ } @t)) {
+      push @block, "review.md is written only by review.sh: an agent must not change a review." if grep { /$rv/ } @t;
+    }
 
     if ($prog eq "git") {
       # Find the git subcommand: skip global options and their values.
@@ -50,6 +56,19 @@ perl -e '
       while ($i < @t && $t[$i] =~ /^-/) { $i += ($t[$i] =~ /^(-C|-c|--git-dir|--work-tree|--namespace)$/) ? 2 : 1 }
       my $sub = $t[$i] // "";
       my @args = @t[$i + 1 .. $#t];
+
+      # Changing core.hooksPath switches the hooks off; reading it is fine.
+      my $hp = "core.hooksPath changes which git hooks run.";
+      push @block, $hp if grep { /^core\.hookspath=/i } @t[1 .. $i - 1];
+      if ($sub eq "config") {
+        my ($k) = grep { $args[$_] =~ /^core\.hookspath$/i } 0 .. $#args;
+        if (defined $k) {
+          my @pos = grep { !/^-/ } @args[$k + 1 .. $#args];
+          my $writes = @pos || grep { /^--(unset|unset-all|add|replace-all|edit)$/ } @args;
+          $writes ||= ($args[0] // "") =~ /^(set|unset)$/;
+          push @block, $hp if $writes;
+        }
+      }
 
       if ($sub eq "commit" && grep { /^-[a-zA-Z]*n[a-zA-Z]*$/ } @args) {
         push @block, "git commit -n is short for --no-verify: it skips the git hooks.";

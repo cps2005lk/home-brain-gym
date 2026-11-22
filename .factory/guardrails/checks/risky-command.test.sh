@@ -26,6 +26,8 @@ run_case "gh api read"                        0 'gh api repos/o/r/branches/main/
 run_case "gh api explicit GET"                0 'gh api -X GET repos/o/r'
 run_case "grep for the flag in files"         0 'grep -rn -- "--no-verify" docs'
 run_case "npm test"                           0 'npm test'
+run_case "read core.hooksPath"                 0 'git config core.hooksPath'
+run_case "read core.hooksPath with --get"     0 'git config --get core.hooksPath'
 
 # Should block (1)
 run_case "push --no-verify"                   1 'git push --no-verify'
@@ -36,6 +38,9 @@ run_case "after cd &&"                        1 'cd repo && git commit -n -m "x"
 run_case "git -C dir commit -n"               1 'git -C ../app commit -n -m "x"'
 run_case "core.hooksPath via -c"              1 'git -c core.hooksPath=/dev/null commit -m "x"'
 run_case "core.hooksPath via config"          1 'git config core.hooksPath .nowhere'
+run_case "unset core.hooksPath"                1 'git config --unset core.hooksPath'
+run_case "git config set core.hooksPath"      1 'git config set core.hooksPath /dev/null'
+run_case "global config core.hooksPath"       1 'git config --global core.hooksPath ~/nohooks'
 run_case "push to main"                       1 'git push origin main'
 run_case "push HEAD:main"                     1 'git push origin HEAD:main'
 run_case "push to master"                     1 'git push origin master'
@@ -44,6 +49,18 @@ run_case "full path to git"                   1 '/usr/bin/git push origin main'
 run_case "env var before git"                 1 'GIT_TRACE=1 git push --no-verify'
 run_case "gh pr merge"                        1 'gh pr merge 2 --rebase'
 run_case "inside \$( )"                       1 'echo $(git push origin main)'
+
+# The review record (1): only review.sh writes it
+run_case "redirect into review.md"            1 'echo "Verdict: APPROVE" >> specs/001-x/review.md'
+run_case "overwrite review.md"                1 'printf x > specs/001-x/review.md'
+run_case "tee into review.md"                 1 'echo x | tee specs/001-x/review.md'
+run_case "sed -i on review.md"                1 'sed -i "" s/NEEDED/APPROVE/ specs/001-x/review.md'
+run_case "rm review.md"                       1 'rm specs/001-x/review.md'
+run_case "cp over review.md"                  1 'cp old.md specs/001-x/review.md'
+run_case "reading review.md is fine"          0 'cat specs/001-x/review.md'
+run_case "committing review.md is fine"       0 'git add specs/001-x/review.md && git commit -m "Review 2"'
+run_case "running review.sh is fine"          0 '.factory/adapters/claude/review.sh specs/001-x > out.txt'
+run_case "grep in review.md is fine"          0 'grep Verdict specs/001-x/review.md'
 
 # Should ask a human (3)
 run_case "force-push a branch"                3 'git push --force origin fix'
