@@ -6,12 +6,23 @@
  */
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createRng } from "../../core/random";
+import { scriptedRng } from "../../core/rng-fakes";
 import type { Kid } from "../../data/types";
 import { PlayScreen } from "../../screens/PlayScreen";
 import { findGame } from "../index";
 import { GAME_VIEWS } from "../views";
 import { oddOneOut, type OddOneOutState } from "./logic";
 import { OddOneOutView } from "./view";
+
+/**
+ * The runner gets its numbers from createRng(). Here it stays the real one
+ * unless a test asks for fixed numbers (like a fake IRandom in C#).
+ */
+vi.mock("../../core/random", async (importOriginal) => {
+  const real = await importOriginal<typeof import("../../core/random")>();
+  return { ...real, createRng: vi.fn(real.createRng) };
+});
 
 const KID: Kid = {
   id: "00000000-0000-4000-8000-000000000002",
@@ -53,6 +64,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  vi.mocked(createRng).mockReset();
   vi.restoreAllMocks();
   vi.useRealTimers();
 });
@@ -133,6 +145,9 @@ describe("Odd One Out screen", () => {
   });
 
   it("draws 16 Teen shapes in 4 columns, exactly one drawn differently (FR-016)", () => {
+    // Fixed numbers: 7 -> odd shape is Shape 8; 1 -> square;
+    // 3 -> fourth of [bigger, smaller, turned, no-dot]. So only the dot differs.
+    vi.mocked(createRng).mockReturnValueOnce(scriptedRng([7, 1, 3]));
     const { container } = render(
       <OddOneOutView kid={{ ...KID, level: "teen" }} onFinish={vi.fn()} onQuit={vi.fn()} />,
     );
@@ -152,6 +167,8 @@ describe("Odd One Out screen", () => {
       (drawing) => drawings.filter((other) => other === drawing).length === 1,
     );
     expect(differs).toHaveLength(1);
+    expect(createRng).toHaveBeenCalledTimes(1);
+    expect(buttons[7]?.innerHTML).toBe(differs[0]);
   });
 });
 
