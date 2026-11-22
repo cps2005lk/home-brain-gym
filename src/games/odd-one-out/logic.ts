@@ -1,4 +1,5 @@
 import type { LevelId } from "../../core/level";
+import type { Rng } from "../../core/random";
 
 /** The drawn shapes. A union type, like the other games use instead of an enum. */
 export type ShapeKind = "circle" | "square" | "triangle" | "star" | "heart";
@@ -76,3 +77,36 @@ export const NEW_GRID_PAUSE_MS = 300;
 
 export const sameShape = (a: Shape, b: Shape): boolean =>
   a.kind === b.kind && a.scale === b.scale && a.turnDeg === b.turnDeg && a.dot === b.dot;
+
+/**
+ * `noUncheckedIndexedAccess` types `list[i]` as "maybe undefined". The rolls
+ * always stay inside the list, so a miss is a bug: throw instead of guessing.
+ */
+function pick<T>(list: readonly T[], index: number): T {
+  const item = list[index];
+  if (item === undefined) throw new Error(`roll ${index} is outside a list of ${list.length}`);
+  return item;
+}
+
+const plainShape = (kind: ShapeKind): Shape => ({ kind, scale: 1, turnDeg: 0, dot: false });
+
+/**
+ * One new grid. The order of the rolls is part of the contract
+ * (contracts/logic.md), because tests script them.
+ */
+export function makeGrid(level: LevelId, rng: Rng): Grid {
+  const { rows, cols } = ODD_ONE_OUT_LEVELS[level];
+  const count = rows * cols;
+
+  const oddIndex = rng.nextInt(count);
+  const commonKind = pick(SHAPE_KINDS, rng.nextInt(SHAPE_KINDS.length));
+  const kindsLeft = SHAPE_KINDS.filter((kind) => kind !== commonKind);
+  const oddKind = pick(kindsLeft, rng.nextInt(kindsLeft.length));
+
+  const common = plainShape(commonKind);
+  const odd = plainShape(oddKind);
+  return {
+    shapes: Array.from({ length: count }, (_, index) => (index === oddIndex ? odd : common)),
+    oddIndex,
+  };
+}
