@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-22
 
-**Status**: Draft
+**Status**: Reviewed
 
 **Input**: User description: "Odd One Out, a new game for Brain Gym. A grid of shapes is shown and exactly one shape is different; the kid taps the different one. Skill: visual attention. Junior: a 2×3 grid and an obvious difference. Teen: a 4×4 grid and a subtle difference. It follows docs/brain/games.md like every other game (one folder under src/games/, logic without React, the rules that apply to every game)."
 
@@ -146,8 +146,11 @@ and counts.
 - **FR-013**: A finished Odd One Out game MUST count towards the "two games a
   day" streak like any other game.
 - **FR-014**: The game MUST be added the same way as every other game (one
-  game folder plus one entry in each game list) and MUST NOT change other
-  parts of the app.
+  game folder plus one entry in each game list). Besides these, it MAY add
+  its own styles (one small block in `src/styles/global.css`), and it MUST
+  update `docs/brain/games.md` (move Odd One Out from the ideas to a Built
+  list), because code and its docs change in the same pull request. It MUST
+  NOT change any other part of the app. _(Owner decision, 2026-11-22.)_
 - **FR-015**: The game MUST NOT store any new data about a kid; only the score
   data that every game already saves.
 - **FR-016**: In every grid, the odd shape MUST look different as drawn. A
@@ -182,12 +185,19 @@ and counts.
 - **SC-004**: A kid can start the game and understand what to do from the
   one-line "how to play" alone, without help from a parent.
 - **SC-005**: All the shared game rules (own best only, daily limit, Stop,
-  streak) behave exactly as in the other games, checked by tests.
-- **SC-006**: All project checks pass, and no part of the app outside the new
-  game folder and the two game lists is changed.
+  streak) behave exactly as in the other games. The shared rules do not
+  depend on which game is played, and their existing tests cover them. The
+  parts that belong to this game are checked by its own tests: Stop in the
+  play screen saves nothing, and a finished game is saved with this game's
+  id, its score and its mistakes. The rest is checked by hand.
+- **SC-006**: All project checks pass, and nothing outside the places named
+  in FR-014 is changed: the new game folder, the two game lists, the one
+  styles block in `src/styles/global.css` and `docs/brain/games.md`.
 - **SC-007**: Before merging, the owner plays 3 Teen games and confirms that
   each difference is visible but not instant. Code cannot judge "subtle"; a
-  person must. _(Owner decision, 2026-11-22.)_
+  person must. _(Owner decision, 2026-11-22.)_ Also before merging, the
+  younger kid plays one Junior game and understands it from the "how to
+  play" line without help. _(Owner decision, 2026-11-22.)_
 
 ## Assumptions
 
@@ -205,6 +215,6 @@ score as rounds, and the skill group below.
 - Shapes are simple drawn shapes (circle, square, triangle, star and similar);
   no pictures or photos.
 - The game removes Odd One Out from the "Ideas not built yet" list in the
-  games guide and adds it to a "Built" list.
+  games guide and adds it to a "Built" list (now required by FR-014).
 - No database change is needed: the game uses the score saving that all games
   already share.
