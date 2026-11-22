@@ -3,6 +3,7 @@ import type { GameViewProps } from "../play/types";
 import { ArrowRushView } from "./arrow-rush/view";
 import { BackOneView } from "./back-one/view";
 import { ColorClashView } from "./color-clash/view";
+import { OddOneOutView } from "./odd-one-out/view";
 import { PatternMemoryView } from "./pattern-memory/view";
 import { QuickAddView } from "./quick-add/view";
 import { RuleSwitchView } from "./rule-switch/view";
@@ -23,4 +24,5 @@ export const GAME_VIEWS: Record<string, ComponentType<GameViewProps>> = {
   "quick-add": QuickAddView,
   "back-one": BackOneView,
   "tap-order": TapOrderView,
+  "odd-one-out": OddOneOutView,
 };
