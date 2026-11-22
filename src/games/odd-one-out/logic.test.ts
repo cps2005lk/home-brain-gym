@@ -7,8 +7,10 @@ import {
   SHAPE_KINDS,
   SYMMETRY_DEG,
   makeGrid,
+  oddOneOut,
   sameShape,
   type Grid,
+  type OddOneOutState,
   type Shape,
 } from "./logic";
 
@@ -136,5 +138,159 @@ describe("makeGrid at Junior", () => {
       expect(sameShape(odd, common)).toBe(false);
       expect(odd.kind).not.toBe(common.kind);
     }
+  });
+});
+
+describe("Odd One Out game", () => {
+  it("has its meta and levels", () => {
+    expect(oddOneOut.meta).toEqual({
+      id: "odd-one-out",
+      name: "Odd One Out",
+      skill: "attention",
+      skillLabel: "Visual attention",
+      how: "One shape is different. Tap it!",
+      glyph: "◆",
+      accent: "var(--blue)",
+      scoreUnit: "rounds",
+      scoreUnitOne: "round",
+      timed: true,
+    });
+    expect(oddOneOut.levels).toBe(ODD_ONE_OUT_LEVELS);
+  });
+
+  it("starts a Junior game with 45 seconds and the first grid", () => {
+    const state = oddOneOut.create("junior", scriptedRng([4, 0, 0]), 1000);
+    expect(state).toEqual({
+      level: "junior",
+      endsAtMs: 46000,
+      nowMs: 1000,
+      grid: makeGrid("junior", scriptedRng([4, 0, 0])),
+      gridShownAtMs: 1000,
+      correct: 0,
+      mistakes: 0,
+      lastAnswer: null,
+    });
+  });
+});
+
+/**
+ * Each test gives the Rng the 3 numbers for the first grid plus exactly 3 more
+ * for every new grid it expects. An ignored answer must not roll, so an extra
+ * roll runs out of numbers and the test fails.
+ */
+describe("Odd One Out reduce", () => {
+  const FIRST = [4, 0, 0]; // odd place 4: a square among circles
+  const NEXT = [1, 2, 2]; // odd place 1: a star among triangles
+  const start = (rolls: readonly number[]) => {
+    const rng = scriptedRng(rolls);
+    return { rng, state: oddOneOut.create("junior", rng, 1000) };
+  };
+  const answer = (input: number, atMs: number) => ({ kind: "answer" as const, input, atMs });
+
+  it("returns the same state once the game is over", () => {
+    const { rng, state } = start(FIRST);
+    const over = oddOneOut.reduce(state, { kind: "tick", atMs: 46000 }, rng);
+    expect(oddOneOut.isOver(over)).toBe(true);
+    expect(oddOneOut.reduce(over, answer(4, 46001), rng)).toBe(over);
+  });
+
+  it("only moves the clock on a tick", () => {
+    const { rng, state } = start(FIRST);
+    expect(oddOneOut.reduce(state, { kind: "tick", atMs: 1500 }, rng)).toEqual({
+      ...state,
+      nowMs: 1500,
+    });
+  });
+
+  it("does not count an answer that comes when the time is up", () => {
+    const { rng, state } = start(FIRST);
+    const next = oddOneOut.reduce(state, answer(4, 46000), rng);
+    expect(next).toEqual({ ...state, nowMs: 46000 });
+    expect(oddOneOut.isOver(next)).toBe(true);
+  });
+
+  it("ignores an answer in the pause on the first grid", () => {
+    const { rng, state } = start(FIRST);
+    expect(oddOneOut.reduce(state, answer(4, 1100), rng)).toEqual({ ...state, nowMs: 1100 });
+  });
+
+  it("ignores an answer 299 ms after a new grid", () => {
+    const { rng, state } = start([...FIRST, ...NEXT]);
+    const second = oddOneOut.reduce(state, answer(4, 2000), rng);
+    expect(second.gridShownAtMs).toBe(2000);
+    expect(oddOneOut.reduce(second, answer(1, 2299), rng)).toEqual({ ...second, nowMs: 2299 });
+  });
+
+  it("counts an answer exactly 300 ms after a new grid", () => {
+    const { rng, state } = start([...FIRST, ...NEXT]);
+    const next = oddOneOut.reduce(state, answer(4, 1300), rng);
+    expect(next.correct).toBe(1);
+    expect(next.gridShownAtMs).toBe(1300);
+  });
+
+  it("ignores a tap outside the grid", () => {
+    const { rng, state } = start(FIRST);
+    expect(oddOneOut.reduce(state, answer(-1, 2000), rng)).toEqual({ ...state, nowMs: 2000 });
+    expect(oddOneOut.reduce(state, answer(6, 2000), rng)).toEqual({ ...state, nowMs: 2000 });
+  });
+
+  it("counts a tap on the odd shape as right and shows a new grid", () => {
+    const { rng, state } = start([...FIRST, ...NEXT]);
+    expect(oddOneOut.reduce(state, answer(4, 2000), rng)).toEqual({
+      ...state,
+      nowMs: 2000,
+      correct: 1,
+      lastAnswer: "right",
+      grid: makeGrid("junior", scriptedRng(NEXT)),
+      gridShownAtMs: 2000,
+    });
+  });
+
+  it("counts a tap on another shape as a mistake and shows a new grid", () => {
+    const { rng, state } = start([...FIRST, ...NEXT]);
+    expect(oddOneOut.reduce(state, answer(0, 2000), rng)).toEqual({
+      ...state,
+      nowMs: 2000,
+      mistakes: 1,
+      lastAnswer: "wrong",
+      grid: makeGrid("junior", scriptedRng(NEXT)),
+      gridShownAtMs: 2000,
+    });
+  });
+
+  it("gives the same game for the same seed and the same taps (FR-005)", () => {
+    const play = (): OddOneOutState => {
+      const rng = createSeededRng(7);
+      let state = oddOneOut.create("junior", rng, 0);
+      const taps = [answer(0, 500), answer(3, 900), answer(5, 1000), answer(2, 1500)];
+      for (const tap of taps) state = oddOneOut.reduce(state, tap, rng);
+      return state;
+    };
+    expect(play()).toEqual(play());
+  });
+});
+
+describe("Odd One Out progress", () => {
+  const fresh = (): OddOneOutState => oddOneOut.create("junior", scriptedRng([4, 0, 0]), 1000);
+
+  it("shows rounds solved, mistakes and time left", () => {
+    const state = fresh();
+    expect(oddOneOut.progress({ ...state, nowMs: 11000, correct: 3, mistakes: 2 })).toEqual({
+      score: 3,
+      detail: "2 mistakes",
+      timeLeftMs: 35000,
+      livesLeft: null,
+    });
+  });
+
+  it("says 0 mistakes and 1 mistake correctly", () => {
+    const state = fresh();
+    expect(oddOneOut.progress(state).detail).toBe("0 mistakes");
+    expect(oddOneOut.progress({ ...state, mistakes: 1 }).detail).toBe("1 mistake");
+  });
+
+  it("never shows less than zero time left", () => {
+    const state = fresh();
+    expect(oddOneOut.progress({ ...state, nowMs: 50000 }).timeLeftMs).toBe(0);
   });
 });
