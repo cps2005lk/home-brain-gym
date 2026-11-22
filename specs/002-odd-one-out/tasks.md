@@ -68,7 +68,7 @@ files that may change: `src/games/index.ts`, `src/games/views.tsx`,
 
 **Purpose**: Make sure the starting point is clean.
 
-- [ ] T001 Check the start: on branch `002-odd-one-out`, git hooks on (`.factory/guardrails/setup-hooks.sh`), and `scripts/check.sh` passes from the repo root before any change. If it fails, stop and tell the owner; do not fix unrelated code.
+- [x] T001 Check the start: on branch `002-odd-one-out`, git hooks on (`.factory/guardrails/setup-hooks.sh`), and `scripts/check.sh` passes from the repo root before any change. If it fails, stop and tell the owner; do not fix unrelated code.
 
 ---
 
