@@ -838,6 +838,23 @@ input:focus-visible {
   background: #1d2446;
 }
 
+/* ---------- Odd One Out ---------- */
+.cell.shape {
+  /* Light cell, dark shape: the shapes stand out, and colour is never the difference. */
+  width: 100%;
+  padding: 0;
+  background: var(--board-ink);
+  color: var(--board);
+  display: grid;
+  place-items: center;
+}
+
+.cell.shape svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 .code {
   font-family: var(--display);
   font-size: 1.3rem;
