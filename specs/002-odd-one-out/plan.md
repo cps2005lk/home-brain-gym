@@ -13,7 +13,8 @@ or missing its small centre dot.
 
 The game is built like every other game (`docs/brain/games.md`): one folder
 `src/games/odd-one-out/` with `logic.ts` (pure rules, `Rng` and `atMs` only),
-`logic.test.ts` and `view.tsx`, plus one line in each registry. It is modelled
+`logic.test.ts`, `view.tsx` and `view.test.tsx`, plus one line in each
+registry. It is modelled
 on **Arrow Rush** (timed, right/mistake, a new round after every answer) and
 **Tap the Order** (a grid of tap buttons, the input is a cell index). Shapes
 are drawn as inline SVG in the view. No database change.
@@ -27,8 +28,10 @@ are drawn as inline SVG in the view. No database change.
 **Storage**: N/A for this feature. The score is saved by the shared play
 screen, like every game (`FinishedPlay`).
 
-**Testing**: Vitest 5 (`logic.test.ts`, with `scriptedRng` and
-`createSeededRng`); full gate is `scripts/check.sh`.
+**Testing**: Vitest 5: `logic.test.ts` (with `scriptedRng` and
+`createSeededRng`) and `view.test.tsx` (jsdom + Testing Library, already
+installed, in the style of `src/screens/PlayScreen.stop.test.tsx`); full gate
+is `scripts/check.sh`.
 
 **Target Platform**: Browser (phone and tablet first), deployed by Vercel.
 
@@ -39,10 +42,11 @@ SVG shapes per grid, so no special work is needed.
 
 **Constraints**: Logic has no React, no clock, no `Math.random()`; difference
 never by colour alone (FR-006); a 300 ms "new grid" pause (FR-017); no shared
-file outside the game folder, the two registries and `games.md` changes
-(FR-014, SC-006).
+file changes outside the game folder, the two registries, one styles block in
+`global.css` and `games.md` (FR-014, SC-006).
 
-**Scale/Scope**: One game, three new files, two registry lines, one doc edit.
+**Scale/Scope**: One game, four new files, two registry lines, one styles
+block, one doc edit.
 
 ## Constitution Check
 
@@ -52,14 +56,15 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------- | ------ |
 | I. Project rules       | No new kid data; own best only (shared result screen); Stop and daily limit are shared code; Colombo day not touched. | Pass   |
 | II. Games              | One folder, `logic.ts` with no React, two registry lines, the "Rules that apply to every game" kept.                  | Pass   |
-| III. Test first        | Tasks will be `Red:` (tests only) then `Green:` commits for the logic.                                                | Pass   |
+| III. Test first        | Every change in behaviour, in the logic **and** in the view, is a `Red:` (tests only) then `Green:` commit pair.      | Pass   |
 | IV. `scripts/check.sh` | Required before the feature is done.                                                                                  | Pass   |
 | V. Kids come first     | Score only (rounds + mistakes detail). Nothing new stored.                                                            | Pass   |
 
 **Post-design re-check (after Phase 1)**: Pass. The design adds one thing that
 is easy to miss: the shared runner bumps `answerCount` on every tap, even an
 ignored one, so the view takes its flash token from the game state instead
-(see research R5). This keeps FR-014: no shared file changes.
+(see research R5). This keeps FR-014: no shared file changes. A view test
+(`view.test.tsx`) proves that a tap in the pause does not replay the flash.
 
 ## Project Structure
 
@@ -82,7 +87,8 @@ specs/002-odd-one-out/
 src/games/odd-one-out/
 ├── logic.ts          # levels, grid making, reduce, progress - no React
 ├── logic.test.ts     # Vitest: levels, grids, change rules, taps, pause, time
-└── view.tsx          # PlayShell + a grid of SVG shape buttons
+├── view.tsx          # PlayShell + a grid of SVG shape buttons
+└── view.test.tsx     # Testing Library: shapes drawn, tap index, pause, play screen
 
 src/games/index.ts    # + import and entry `oddOneOut`
 src/games/views.tsx   # + "odd-one-out": OddOneOutView
@@ -93,10 +99,12 @@ docs/brain/games.md   # move Odd One Out from "Ideas" to "Built"
 **Structure Decision**: The standard game layout from `docs/brain/games.md`.
 Shared code (`src/core`, `src/play`, `src/screens`, `src/data`) is not
 changed. Stop, daily limit, streak and own-best already work for every game in
-the registry (`PlayScreen`, `streaks.ts`, `ResultScreen`).
+the registry (`PlayScreen`, `streaks.ts`, `ResultScreen`). They do not depend
+on which game is played. What is this game's own (its Stop wiring and the
+result it saves) is tested in `view.test.tsx` through `PlayScreen`.
 
 ## Complexity Tracking
 
-| Violation                      | Why Needed                                       | Simpler Alternative Rejected Because                                           |
-| ------------------------------ | ------------------------------------------------ | ------------------------------------------------------------------------------ |
-| Small addition to `global.css` | Every game's board styles live in this one file. | Inline styles only would work, but break the pattern every other game follows. |
+No violations. The small addition to `global.css` (every game's board styles
+live in this one file) and the `games.md` update are now allowed by FR-014
+(owner decision, 2026-11-22).

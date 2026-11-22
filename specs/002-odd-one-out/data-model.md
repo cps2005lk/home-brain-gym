@@ -73,6 +73,10 @@ Rules (tested over many seeded grids, SC-001):
 
 Input: `number` - the index of the tapped shape.
 
+Names in the spec and in the code: "rounds solved" (the score) = `correct`;
+"mistakes" = `mistakes`; "Game round result" (right or mistake for one tap)
+= `lastAnswer`.
+
 ## State changes (`reduce`)
 
 1. Game already over → state unchanged.

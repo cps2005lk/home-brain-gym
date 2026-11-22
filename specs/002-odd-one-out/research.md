@@ -55,7 +55,9 @@ owner settled the open choices in the spec. These are the design decisions.
   there. Here an ignored tap would replay the last green/red flash.
 - **Decision**: The view passes `flashToken={state.correct + state.mistakes}`
   to `PlayShell` instead of `answerCount`. It changes only when a tap really
-  counted.
+  counted. A view test (`view.test.tsx`, tasks T011) checks that a tap in
+  the pause leaves the same flash element on screen, so the fix cannot be
+  lost by mistake.
 - **Alternatives**: Change `useGameRunner` - touches shared code, against
   FR-014 and SC-006.
 
@@ -74,8 +76,11 @@ owner settled the open choices in the spec. These are the design decisions.
   buttons, plus a small `.cell.shape` block in `global.css` (SVG fills the
   cell, light background so shapes stand out). Columns come from the level
   (`gridTemplateColumns: repeat(cols, 1fr)`), like Tap the Order.
-- **Rationale**: All game styles live in `global.css`. Gaps between buttons are
-  not buttons, so a tap there does nothing (spec edge case).
+- **Rationale**: All game styles live in `global.css`, and FR-014 allows this
+  one block. Gaps between buttons are not buttons, so a tap there does
+  nothing (spec edge case).
+- **Drawing room**: each shape's SVG leaves padding, so the shape at
+  `biggerScale` (1.2) is never cut off at the edge of the `viewBox` (FR-016).
 
 ## R8. Meta
 
