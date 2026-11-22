@@ -29,13 +29,18 @@ Plus one line in `src/games/index.ts` (the logic registry) and one in
 | **Back One**      | Working memory (harder) | 45 s, match the symbol **one** back | 30 s, match **two** back, faster       |
 | **Tap the Order** | Processing speed        | 45 s, numbers 1-6                   | 30 s, numbers 1-12                     |
 
+## Built (feature 002)
+
+| Game            | Skill            | Junior                                    | Teen                                                     |
+| --------------- | ---------------- | ----------------------------------------- | -------------------------------------------------------- |
+| **Odd One Out** | Visual attention | 45 s, 2×3 grid, a different kind of shape | 30 s, 4×4 grid, a bit bigger, smaller, turned, or no dot |
+
 ## Ideas not built yet
 
 Kept here so we do not lose them.
 
 | Game            | Skill            | What the kid does                                                                                                                             |
 | --------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Odd One Out** | Visual attention | A grid of shapes, one is different - tap it. Junior 2×3 and obvious; Teen 4×4 and subtle.                                                     |
 | **Stop Go**     | Self-control     | Tap every shape **except** the red one. Overlaps a little with Color Clash.                                                                   |
 | **Shape Shift** | Spatial thinking | Pick which shape is the same one rotated. Junior quarter turns; Teen any angle and mirrored. The most work, because the shapes must be drawn. |
 
