@@ -91,25 +91,57 @@ function pick<T>(list: readonly T[], index: number): T {
 
 const plainShape = (kind: ShapeKind): Shape => ({ kind, scale: 1, turnDeg: 0, dot: false });
 
+const CHANGES: readonly Change[] = ["bigger", "smaller", "turned", "no-dot"];
+
+/**
+ * The Teen changes that really look different for this kind (FR-016): no
+ * turn for a circle, and no turn that maps the shape onto itself.
+ */
+export function changesFor(kind: ShapeKind, level: OddOneOutLevel): readonly Change[] {
+  const symmetry = SYMMETRY_DEG[kind];
+  const turnLooksSame = symmetry === 0 || level.turnDeg % symmetry === 0;
+  return turnLooksSame ? CHANGES.filter((change) => change !== "turned") : CHANGES;
+}
+
+function changedShape(shape: Shape, change: Change, level: OddOneOutLevel): Shape {
+  switch (change) {
+    case "bigger":
+      return { ...shape, scale: level.biggerScale };
+    case "smaller":
+      return { ...shape, scale: level.smallerScale };
+    case "turned":
+      return { ...shape, turnDeg: level.turnDeg };
+    case "no-dot":
+      return { ...shape, dot: false };
+  }
+}
+
 /**
  * One new grid. The order of the rolls is part of the contract
  * (contracts/logic.md), because tests script them.
  */
 export function makeGrid(level: LevelId, rng: Rng): Grid {
-  const { rows, cols } = ODD_ONE_OUT_LEVELS[level];
-  const count = rows * cols;
+  const settings = ODD_ONE_OUT_LEVELS[level];
+  const count = settings.rows * settings.cols;
 
   const oddIndex = rng.nextInt(count);
   const commonKind = pick(SHAPE_KINDS, rng.nextInt(SHAPE_KINDS.length));
+  const fill = (common: Shape, odd: Shape): Grid => ({
+    shapes: Array.from({ length: count }, (_, index) => (index === oddIndex ? odd : common)),
+    oddIndex,
+  });
+
+  if (settings.subtle) {
+    const changes = changesFor(commonKind, settings);
+    const change = pick(changes, rng.nextInt(changes.length));
+    const common: Shape = { ...plainShape(commonKind), dot: true };
+    return fill(common, changedShape(common, change, settings));
+  }
+
   const kindsLeft = SHAPE_KINDS.filter((kind) => kind !== commonKind);
   const oddKind = pick(kindsLeft, rng.nextInt(kindsLeft.length));
 
-  const common = plainShape(commonKind);
-  const odd = plainShape(oddKind);
-  return {
-    shapes: Array.from({ length: count }, (_, index) => (index === oddIndex ? odd : common)),
-    oddIndex,
-  };
+  return fill(plainShape(commonKind), plainShape(oddKind));
 }
 
 export interface OddOneOutState {
