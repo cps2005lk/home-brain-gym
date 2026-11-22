@@ -106,8 +106,8 @@ the result shows the right number of rounds and mistakes.
 
 ### Register
 
-- [ ] T008 [US1] Red: in `src/games/odd-one-out/logic.test.ts` add a test that `findGame("odd-one-out")` from `src/games/index.ts` is `oddOneOut`. Expected red: it returns `undefined`.
-- [ ] T009 [US1] Green: in `src/games/index.ts` import `oddOneOut` from `./odd-one-out/logic` and add it as the last entry of `GAMES`. No other change in that file.
+- [x] T008 [US1] Red: in `src/games/odd-one-out/logic.test.ts` add a test that `findGame("odd-one-out")` from `src/games/index.ts` is `oddOneOut`. Expected red: it returns `undefined`.
+- [x] T009 [US1] Green: in `src/games/index.ts` import `oddOneOut` from `./odd-one-out/logic` and add it as the last entry of `GAMES`. No other change in that file.
 - [ ] T010 [P] [US1] In `src/styles/global.css`, after the `.cell.number` block, add one small `.cell.shape` block (research R7, FR-014): the SVG fills the cell, light background so the shapes stand out. Reuse `.grid` and `.cell`; do not change existing rules. (Styles only; no behaviour, so no test.)
 
 ### Draw the Junior grid
