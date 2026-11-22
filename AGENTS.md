@@ -14,6 +14,11 @@ Home Brain Gym: short brain games for two kids. React + Vite + TypeScript
   kit). A block is a stop sign: tell the user, don't work around it.
 - Each session writes `docs/usage/<date>-<session>.yml`. Commit new ones with
   the next PR. `.factory/usage/report.sh` shows them all.
+- New features use Spec Kit (`specs/<feature>/`, rules in
+  `.specify/memory/constitution.md`). The implementer builds
+  (`claude --agent implementer`); a human runs
+  `.factory/adapters/claude/review.sh specs/<feature>`. CI blocks the merge
+  until the review approves. How far agents may go: `docs/brain/trust.md`.
 
 ## Rules
 
@@ -21,7 +26,8 @@ Home Brain Gym: short brain games for two kids. React + Vite + TypeScript
 - Kids' data: only nickname, avatar, level and scores. No birthdates, photos,
   tracking or analytics. Ask before adding any field about a kid.
 - A kid is only ever compared with their own best, never with a sibling.
-- A game that has started always finishes and always counts.
+- A game that has started is never cut off by the daily limit; only the kid's
+  own Stop throws it away (`docs/brain/decisions/0004`).
 - Game rules are plain TypeScript with no React. Randomness comes from `Rng`,
   time from the event's `atMs`, never from the clock inside the rules.
 - A "day" is an `Asia/Colombo` day. Use `dayKey()`, never the device's date.
