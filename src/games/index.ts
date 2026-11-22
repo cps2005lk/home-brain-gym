@@ -1,6 +1,7 @@
 import { arrowRush } from "./arrow-rush/logic";
 import { backOne } from "./back-one/logic";
 import { colorClash } from "./color-clash/logic";
+import { oddOneOut } from "./odd-one-out/logic";
 import { patternMemory } from "./pattern-memory/logic";
 import { quickAdd } from "./quick-add/logic";
 import { ruleSwitch } from "./rule-switch/logic";
@@ -22,6 +23,7 @@ export const GAMES = [
   quickAdd,
   backOne,
   tapOrder,
+  oddOneOut,
 ] as const;
 
 export type AnyGame = (typeof GAMES)[number];
