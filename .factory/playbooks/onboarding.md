@@ -305,6 +305,9 @@ server rule is the lock nobody gets past.
      tag can be moved to other code later; a SHA can't.
    - **Read the first log.** Green is not proof: confirm the tests actually
      ran (for example "232 tests passed"), not zero of them.
+   - **With reviewed features** (task loop playbook): check out the branch head
+     with full history (`ref: ${{ github.event.pull_request.head.sha || github.sha }}`,
+     `fetch-depth: 0`) and add a step `.factory/guardrails/checks/review-gate.sh`.
 6. **Turn on branch protection for `main`.** This changes repo settings, so
    the owner decides. Settings that worked for a one-person repo:
    - require a pull request (0 approvals: GitHub doesn't count your approval

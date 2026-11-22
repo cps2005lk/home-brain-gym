@@ -22,6 +22,13 @@ command -v jq >/dev/null || block "jq not found, so the command was not checked.
 
 input="$(cat)"
 tool="$(jq -r '.tool_name // empty' <<<"$input" 2>/dev/null)" || block "the hook input was not valid JSON, so the command was not checked."
+# File tools: only one rule, the review record is written by review.sh alone.
+if [[ "$tool" =~ ^(Edit|Write|MultiEdit|NotebookEdit)$ ]]; then
+  path="$(jq -r '.tool_input.file_path // .tool_input.notebook_path // empty' <<<"$input")"
+  [[ "$path" =~ (^|/)review\.md$ ]] && block "review.md is written only by review.sh: an agent must not change a review.
+This is a factory guardrail. Don't look for a way around it: tell the user what you wanted to do and why."
+  exit 0
+fi
 [[ "$tool" == "Bash" ]] || exit 0
 
 cmd="$(jq -r '.tool_input.command // empty' <<<"$input")"
