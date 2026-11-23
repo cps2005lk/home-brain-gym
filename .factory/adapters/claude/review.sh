@@ -8,6 +8,10 @@
 #   --check          the project's checks, run before the review (default: scripts/check.sh)
 #   --another-round  a human allows a review after 3 rounds of CHANGES NEEDED
 #
+# Red proof: every "Red:" commit is checked out and the checks run there. If
+# the project has scripts/review-setup.sh, it runs first in each checkout
+# (REVIEW_ROOT = the main folder), for things git doesn't hold, like node_modules.
+#
 # Rounds: each review after a CHANGES NEEDED is the next round. After round 3
 # still says CHANGES NEEDED, the script stops: a human decides, not another loop.
 # Writes:  <spec-folder>/review.md (not committed: a human reads and commits it)
@@ -77,6 +81,15 @@ if [[ -n "$check" ]] && command -v "${check%% *}" >/dev/null 2>&1; then
     while read -r sha subject; do
       git worktree add -q --detach "$wt" "$sha" 2>/dev/null || { red="$red
 - $sha $subject: could not check out."; continue; }
+      # A proof must run where the real thing runs: the project may prepare each
+      # checkout (for example link node_modules). The kit owns when, the project
+      # owns what, like scripts/check.sh.
+      if [[ -x "$root/scripts/review-setup.sh" ]] && ! (cd "$wt" && REVIEW_ROOT="$root" "$root/scripts/review-setup.sh" >/dev/null 2>&1); then
+        git worktree remove --force "$wt"
+        red="$red
+- $sha $subject: could not prepare the checkout (scripts/review-setup.sh failed). NOT proven."
+        continue
+      fi
       out="$(cd "$wt" && bash -c "$check" 2>&1)"; code=$?
       git worktree remove --force "$wt"
       if (( code != 0 )); then

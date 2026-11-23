@@ -54,13 +54,22 @@ Write in simple English, in this order:
 | --- | --- | --- | --- | --- | --- |
 
 Severity: critical (wrong result, broken rule, missing test for a
-requirement), major (likely bug or gap, or an unticked task: the feature is
-not finished), minor (small, safe to leave). Use the same scale in every
-round: a problem that was major before is still major if it is still there.
+requirement), major (likely bug or gap), minor (small, safe to leave). Use
+the same scale in every round: a problem that was major before is still
+major if it is still there.
+
+Don't count unticked tasks: the review gate counts them. A human task (the
+tasks file says so) goes under "Waiting for the human", not into the
+findings. A requirement with no test or no code is still a finding.
 
 ## Requirements traced
 
 | Requirement | Test | Code | OK? |
+
+## Waiting for the human
+
+Human tasks in the tasks file that are not ticked yet (play tests, checks by
+eye). Not findings.
 
 ## Not checked
 

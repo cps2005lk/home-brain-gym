@@ -32,6 +32,9 @@ finding. For every change in behaviour:
 
 Stop at each checkpoint in `tasks.md` and say what is done and what is next.
 
+Run one command per call. Don't chain commands with `&&`, `;` or loops: a
+chained command may need approval as a whole, and then none of it runs.
+
 ## Never
 
 - Never review your own work, write or edit `review.md`, or say the work is

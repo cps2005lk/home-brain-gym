@@ -277,9 +277,18 @@ server rule is the lock nobody gets past.
      `core.hooksPath` at a folder in the working tree instead fails
      *silently*: on a branch without that folder git runs nothing and says
      nothing.
-4. **Keep the project's tools out of `.factory/`.** A formatter that rewrites
-   kit files breaks the checksums. Example: add `.factory` to
-   `.prettierignore`.
+4. **Keep the project's tools out of tool-written files.** A formatter that
+   rewrites them breaks checksums, updates or the rule that nobody edits them.
+   Add all of these to the formatter's ignore list (for example
+   `.prettierignore`) when you install them:
+   - `.factory` (the kit: checksums);
+   - Spec Kit's own files: `.claude/skills`, `.specify/templates`,
+     `.specify/scripts`, `.specify/workflows`, `.specify/integrations`,
+     `.specify/*.json` (keep `.specify/memory/constitution.md`: it is yours);
+   - `specs/*/review.md` (written by `review.sh`, never edited).
+
+   We learned this three times (M6, M10 twice): each new tool brought files
+   the project's formatter wanted to change.
 5. **Add CI** that runs `scripts/check.sh` on every pull request and on
    `main`. Minimal GitHub Actions file:
 
