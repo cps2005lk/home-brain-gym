@@ -18,3 +18,8 @@
 ## Alternatives
 
 <Options we did not choose, and why.>
+
+## Changes
+
+<Small changes made in place, one line each: YYYY-MM-DD: what changed.
+A real change of the decision is a new ADR (see README.md).>

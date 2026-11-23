@@ -42,6 +42,8 @@ grep -q "+echo hello" "$tmp/prompt" && pass "prompt has the diff" || fail "promp
 grep -q "Add hello" "$tmp/prompt" && pass "prompt has the commits" || fail "prompt has the commits"
 grep -q "hello.sh" "$tmp/prompt" && grep -q "Add hello" "$tmp/prompt" && grep -q "1 file changed" "$tmp/prompt" && pass "each commit lists its files" || fail "each commit lists its files"
 grep -q "ALL CHECKS PASSED" "$tmp/prompt" && grep -q "Exit code: 0" "$tmp/prompt" && pass "prompt has the check output" || fail "prompt has the check output"
+grep -q "No docs/brain/standards/ folder in this project" "$tmp/prompt" && pass "no standards folder: said plainly" || fail "no standards folder said"
+grep -q "No accepted ADRs" "$tmp/prompt" && pass "no ADRs: said plainly" || fail "no ADRs said"
 grep -q "^Verdict: APPROVE" specs/001-x/review.md && pass "writes review.md" || fail "writes review.md"
 rm -f specs/001-x/review.md
 
@@ -104,6 +106,14 @@ mkdir -p specs/002-y/contracts .claude/agents
 echo "SPEC-TEXT-123" >specs/002-y/spec.md; echo "CONTRACT-TEXT-456" >specs/002-y/contracts/cli.md
 printf 'OLD-REVIEW-789\nVerdict: APPROVE\n' >specs/002-y/review.md; echo reviewer >.claude/agents/reviewer.md
 echo "RULES-TEXT-321" >AGENTS.md
+mkdir -p docs/brain/standards/more docs/brain/decisions
+echo "STD-TEXT-555" >docs/brain/standards/coding.md; echo "STD-NESTED-556" >docs/brain/standards/more/api.md
+printf '# 0001: Use X\n\n- **Status:** accepted\n' >docs/brain/decisions/0001-use-x.md
+printf '# 0002: Use Y\n\n- **Status:** proposed\n' >docs/brain/decisions/0002-use-y.md
+printf '# 0003: Use Z\n\n- **Status:** replaced by 0004\n' >docs/brain/decisions/0003-use-z.md
+printf '# 0004: Use W\n\n- **Status:** Accepted\n' >docs/brain/decisions/0004-use-w.md
+printf '# NNNN\n\n- **Status:** proposed | accepted | replaced by NNNN\n' >docs/brain/decisions/0000-template.md
+echo "ADR README" >docs/brain/decisions/README.md
 git add -A && git commit -q -m base && git switch -q -c feature
 echo "test" >the.test && git add -A && git commit -q -m "Red: add the test"
 red1="$(git rev-parse --short HEAD)"
@@ -113,6 +123,9 @@ red2="$(git rev-parse --short HEAD)"
 "$script" --check "test -f code.sh" specs/002-y >/dev/null 2>&1
 grep -q "SPEC-TEXT-123" "$tmp/prompt" && grep -q "CONTRACT-TEXT-456" "$tmp/prompt" && pass "every feature file is in the prompt, in full" || fail "feature files in full"
 grep -q "RULES-TEXT-321" "$tmp/prompt" && pass "the project rules are in the prompt, in full" || fail "project rules in full"
+grep -q "STD-TEXT-555" "$tmp/prompt" && grep -q "STD-NESTED-556" "$tmp/prompt" && pass "every standards file is in the prompt, in full" || fail "standards in full"
+grep -q "docs/brain/decisions/0001-use-x.md" "$tmp/prompt" && grep -q "docs/brain/decisions/0004-use-w.md" "$tmp/prompt" && pass "accepted ADRs are listed" || fail "accepted ADRs listed"
+! grep -q -e "0002-use-y" -e "0003-use-z" -e "0000-template" -e "decisions/README" "$tmp/prompt" && pass "proposed, replaced, template and README are left out" || fail "non-accepted ADRs left out"
 ! grep -q "OLD-REVIEW-789" "$tmp/prompt" && pass "the old review is left out" || fail "old review left out"
 grep -q "$red1 Red: add the test: checks FAIL (exit 1)" "$tmp/prompt" && pass "a real Red step is proven (checks fail there)" || fail "real Red proven"
 grep -q "$red2 Red: a test that passes at once: checks PASS (exit 0)\. This Red step is NOT proven" "$tmp/prompt" && pass "a Red step that passes is reported as not proven" || fail "fake Red reported"
