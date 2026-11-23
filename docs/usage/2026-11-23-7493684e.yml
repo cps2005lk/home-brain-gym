@@ -1,0 +1,16 @@
+# Usage of one agent session. Filled by the factory's SessionEnd hook;
+# a human fills task (in "quotes") and corrections (a number).
+session: 7493684e-5094-4856-8597-5f7cb3411b9b
+project: repo
+branch: odd-one-out-view-tests
+started: 2026-11-23T12:07:06Z
+model: claude-opus-5-5
+wall_minutes: 1
+active_minutes: 1
+replies: 12
+tokens_input: 24
+tokens_cache_write: 16267
+tokens_cache_read: 353256
+tokens_output: 3415
+task:
+corrections:
