@@ -1,0 +1,11 @@
+# The only hosts the box may reach (port 443). One per line.
+# Claude Code
+api.anthropic.com
+console.anthropic.com
+claude.ai
+statsig.anthropic.com
+# GitHub: clone, push, pull requests
+github.com
+api.github.com
+# npm: installing the project's dependencies (npm ci)
+registry.npmjs.org

@@ -21,6 +21,9 @@ Home Brain Gym: short brain games for two kids. React + Vite + TypeScript
   until the review approves. For kids' data, money, access or time, add
   `--model opus` (the default reviewer is Sonnet, chosen by experiment).
   How far agents may go: `docs/brain/trust.md`.
+- Unattended agent work runs in the factory's box (a Docker container with a
+  fresh clone and a limited token): `.factory/container/run.sh task …`. The
+  database token is never in the project; it lives in the password manager.
 
 ## Rules
 
