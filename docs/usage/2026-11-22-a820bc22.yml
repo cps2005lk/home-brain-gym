@@ -12,5 +12,5 @@ tokens_input: 20
 tokens_cache_write: 34357
 tokens_cache_read: 327601
 tokens_output: 8101
-task:
-corrections:
+task: "Odd One Out (002): specify"
+corrections: 0
