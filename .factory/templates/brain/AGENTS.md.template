@@ -9,6 +9,10 @@
 
 ## Rules
 
+- Before you write or review code, read `docs/brain/standards/` and follow
+  it. Follow only ADRs in `docs/brain/decisions/` with the status
+  `accepted`. Never change a standard or an ADR to make your code pass:
+  stop and ask.
 - <Hard rules. Only things an agent would get wrong without being told.>
 
 ## Surprises

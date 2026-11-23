@@ -129,12 +129,42 @@ $(cat "$f")
 done
 [[ -n "$rules" ]] || rules="No AGENTS.md and no constitution in this project."
 
+# The project's standards, in full: the code is judged against every rule.
+standards=""
+if [[ -d docs/brain/standards ]]; then
+  while IFS= read -r f; do
+    standards="$standards
+<file path=\"$f\">
+$(cat "$f")
+</file>"
+  done < <(find docs/brain/standards -type f -name '*.md' | LC_ALL=C sort)
+fi
+[[ -n "$standards" ]] || standards="No docs/brain/standards/ folder in this project (or it is empty): no standards to check. Say so under \"Not checked\"."
+
+# Accepted ADRs, listed by path: the reviewer reads the ones the change touches.
+# Proposed and replaced ADRs are not in force, so they are left out.
+adrs=""
+if [[ -d docs/brain/decisions ]]; then
+  while IFS= read -r f; do
+    grep -Eiq '^[-*[:space:]]*\*\*Status:\*\*[[:space:]]*accepted[[:space:]]*$' "$f" || continue
+    adrs="$adrs
+- $f: $(head -1 "$f" | sed 's/^#[[:space:]]*//')"
+  done < <(find docs/brain/decisions -type f -name '*.md' ! -name README.md ! -name '0000-template.md' | LC_ALL=C sort)
+fi
+[[ -n "$adrs" ]] || adrs="No accepted ADRs in docs/brain/decisions/."
+
 prompt="Review this feature branch. Follow your instructions in full.
 
 Branch: $(git branch --show-current), at $(git rev-parse --short HEAD). Base: $base.
 
 ## Project rules, in full
 $rules
+
+## Standards and guidelines, in full
+$standards
+
+## Accepted ADRs (read the ones this change touches)
+$adrs
 
 ## Feature files, in full
 $feature_files

@@ -1,0 +1,33 @@
+# The factory's CI, ready to copy to .github/workflows/check.yml.
+# It runs scripts/check.sh on every pull request and on main, then the review
+# gate. The job name "check" is the name branch protection requires.
+# Not a Node project? Remove the setup-node step and "npm ci", and add the
+# setup your checks need (for example actions/setup-dotnet for .NET).
+name: check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read # read-only token; CI gets no secrets
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # Pinned to commit SHAs (a tag can move; a SHA can't). Full history and
+      # the real branch head, so the review gate can see what changed.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26
+          cache: npm
+      - run: npm ci
+      - run: scripts/check.sh
+      - run: .factory/guardrails/checks/review-gate.sh

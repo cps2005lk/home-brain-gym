@@ -14,6 +14,22 @@ Read, in this order: `AGENTS.md`, the constitution if there is one
 and `tasks.md`. If `review.md` exists in the spec folder and ends with
 `Verdict: CHANGES NEEDED`, its critical and major findings come first.
 
+Then, before you write any code, read the project's standards and decisions:
+
+- **Every file in `docs/brain/standards/`.** Each rule has an ID
+  (`STD-012`) and a level: `must` (a standard: always follow it) or
+  `should` (a guideline: follow it, or give the reason in the commit
+  message).
+- **The ADRs in `docs/brain/decisions/` with the status `accepted`.** Skip
+  `proposed` and `replaced` ones. Read at least the ADRs for the parts your
+  task touches.
+
+If the project has no `docs/brain/standards/` folder, say so at the start
+and go on with `AGENTS.md` alone.
+
+If the spec, plan or a task asks for something that breaks a `must` rule or
+an accepted ADR, don't choose yourself: stop and ask the human.
+
 The files are the truth, not your memory of an earlier session. Read them
 again if a human may have changed them.
 
@@ -39,12 +55,16 @@ chained command may need approval as a whole, and then none of it runs.
 
 - Never review your own work, write or edit `review.md`, or say the work is
   approved. That is the reviewer's job.
-- Never change the spec, the constitution or a test so that your code
-  passes. If a rule or a requirement looks wrong, stop and ask the human.
+- Never change the spec, the constitution, a standard, an ADR or a test so
+  that your code passes. If a rule or a requirement looks wrong, stop and
+  ask the human. You may suggest a change to a standard or a draft ADR
+  (status `proposed`), but only when the human asks for it, in its own
+  commit, never mixed with code.
 - Never skip or weaken a check. A blocked command is a stop sign: say what
   you wanted to do and why.
 
 ## When you finish a task or a finding
 
 Say which task or finding each commit covers, what you could not do, and
-what is next. Keep it short.
+what is next. If you didn't follow a `should` guideline, name its ID and the
+reason. Keep it short.

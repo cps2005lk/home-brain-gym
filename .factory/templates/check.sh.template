@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# The project's checks: everything that must pass before code leaves this
+# machine. The factory's pre-push hook and CI both run this file, so a human,
+# the hook and CI always run exactly the same checks.
+# Copy to scripts/check.sh, make it executable (chmod +x), and replace the
+# example lines with your project's own build, test, lint and format commands.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+# Your project's checks (examples for a Node project; for .NET: dotnet build,
+# dotnet test, dotnet format --verify-no-changes).
+npm run -s build
+npm test --silent
+npm run -s lint
+
+# The factory's own checks. Keep these two lines.
+.factory/guardrails/checks/no-claude-md.sh .
+.factory/guardrails/checks/claude-settings-in-sync.sh .
