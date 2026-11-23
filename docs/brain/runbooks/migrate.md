@@ -2,7 +2,8 @@
 
 **When:** a change needs a new table, column, policy or function.
 **Needs:** a parent's Supabase dashboard login (a human step), and
-`SUPABASE_ACCESS_TOKEN` in `.env.local` for the types.
+the `SUPABASE_ACCESS_TOKEN` from the password manager for the types (see
+[supabase-setup.md](supabase-setup.md); never in `.env.local`).
 
 ## Steps
 
@@ -13,7 +14,8 @@
    Agents never run SQL against the live project.
    Check: run a read-only query that looks for the new objects, for example
    `select to_regclass('public.<new_table>');`
-4. Regenerate the types: `npm run types:gen`.
+4. Regenerate the types (a human step, in your own terminal):
+   `read -s SUPABASE_ACCESS_TOKEN && export SUPABASE_ACCESS_TOKEN && npm run types:gen`.
    Check: `src/data/database.types.ts` shows the change, and `npm run build` passes.
 5. Update "Applied" in the table below, and `architecture.md` if the data
    model changed.

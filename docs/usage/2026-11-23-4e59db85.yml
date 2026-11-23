@@ -1,0 +1,16 @@
+# Usage of one agent session. Filled by the factory's SessionEnd hook;
+# a human fills task (in "quotes") and corrections (a number).
+session: 4e59db85-1f85-48bb-9ff6-5681cea8f8d0
+project: Brain gym
+branch: main
+started: 2026-11-23T04:48:35Z
+model: claude-haiku-5-5
+wall_minutes: 0
+active_minutes: 0
+replies: 2
+tokens_input: 4
+tokens_cache_write: 14887
+tokens_cache_read: 37170
+tokens_output: 463
+task: "Isolation test: probe run in the Mac sandbox (headless, Haiku)"
+corrections: 0
