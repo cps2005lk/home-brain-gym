@@ -7,6 +7,8 @@
 #   --base           branch to compare with (default: main)
 #   --check          the project's checks, run before the review (default: scripts/check.sh)
 #   --another-round  a human allows a review after 3 rounds of CHANGES NEEDED
+#   --model          the reviewer's model (default: the one in agents/reviewer.md);
+#                    for comparing models on the same review (M11)
 #
 # Red proof: every "Red:" commit is checked out and the checks run there. If
 # the project has scripts/review-setup.sh, it runs first in each checkout
@@ -27,11 +29,13 @@ set -uo pipefail
 stop() { echo "review: $1" >&2; exit 2; }
 
 base=main; check="scripts/check.sh"; spec=""; another=0; max_rounds=3
+model=""
 while (( $# )); do
   case "$1" in
     --base) base="${2:-}"; shift 2 ;;
     --check) check="${2:-}"; shift 2 ;;
     --another-round) another=1; shift ;;
+    --model) model="${2:-}"; shift 2 ;;
     -*) stop "unknown option $1" ;;
     *) spec="${1%/}"; shift ;;
   esac
@@ -148,7 +152,8 @@ $checks
 $(git diff "$base"...HEAD)"
 
 err="$(mktemp)"; trap 'rm -f "$err"' EXIT
-review="$(printf '%s\n' "$prompt" | claude -p --agent reviewer --disallowedTools Bash Edit Write NotebookEdit 2>"$err")" \
+model_args=(); [[ -n "$model" ]] && model_args=(--model "$model")
+review="$(printf '%s\n' "$prompt" | claude -p --agent reviewer ${model_args[@]+"${model_args[@]}"} --disallowedTools Bash Edit Write NotebookEdit 2>"$err")" \
   || stop "the reviewer run failed: $(tail -3 "$err")"
 
 {

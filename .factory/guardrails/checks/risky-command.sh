@@ -46,8 +46,14 @@ perl -e '
     (my $prog = $t[0]) =~ s{.*/}{};
 
     push @block, "--no-verify skips the git hooks." if grep { /^--no-verify$/ } @t;
-    if ($prog =~ /^(tee|cp|mv|rm|truncate|dd)$/ || ($prog =~ /^(sed|perl)$/ && grep { /^-i/ || /^-pi$/ } @t)) {
-      push @block, "review.md is written only by review.sh: an agent must not change a review." if grep { /$rv/ } @t;
+    my $rvmsg = "review.md is written only by review.sh: an agent must not change a review.";
+    if ($prog eq "cp") {
+      # Copying FROM a review is reading it; only the destination (the last
+      # argument) matters.
+      my @pos = grep { !/^-/ } @t[1 .. $#t];
+      push @block, $rvmsg if @pos && $pos[-1] =~ $rv;
+    } elsif ($prog =~ /^(tee|mv|rm|truncate|dd)$/ || ($prog =~ /^(sed|perl)$/ && grep { /^-i/ || /^-pi$/ } @t)) {
+      push @block, $rvmsg if grep { /$rv/ } @t;
     }
 
     if ($prog eq "git") {

@@ -35,6 +35,7 @@ run() { "$script" "$@" >"$tmp/out" 2>&1; echo $?; }
 [[ "$(run specs/001-x)" == 0 ]] && pass "APPROVE: exit 0" || fail "APPROVE: exit 0" "$(cat "$tmp/out")"
 grep -q "^--agent$" "$tmp/args" && grep -qx reviewer "$tmp/args" && pass "runs the reviewer agent" || fail "runs the reviewer agent"
 for t in Bash Edit Write; do grep -qx "$t" "$tmp/args" || fail "removes $t"; done && pass "removes Bash, Edit and Write"
+! grep -qx -- "--model" "$tmp/args" && pass "no --model unless asked (the agent file decides)" || fail "no --model by default"
 grep -q "specs/001-x/spec.md" "$tmp/prompt" && grep -q "specs/001-x/tasks.md" "$tmp/prompt" && pass "prompt names the spec and tasks" || fail "prompt names the spec and tasks"
 grep -q "+echo hello" "$tmp/prompt" && pass "prompt has the diff" || fail "prompt has the diff"
 grep -q "Add hello" "$tmp/prompt" && pass "prompt has the commits" || fail "prompt has the commits"
@@ -65,6 +66,8 @@ echo dirty >>hello.sh
 [[ "$(run specs/001-x)" == 2 && ! -e "$tmp/prompt" ]] && pass "uncommitted changes: refused" || fail "uncommitted changes"
 git checkout -q -- hello.sh
 [[ "$(run specs/nope)" == 2 ]] && pass "no spec: refused" || fail "no spec"
+run --model haiku specs/001-x >/dev/null; grep -qx -- "--model" "$tmp/args" && grep -qx haiku "$tmp/args" && pass "--model haiku reaches claude" || fail "--model passed"
+rm -f specs/001-x/review.md "$tmp/prompt"
 git switch -q main
 [[ "$(run specs/001-x)" == 2 ]] && pass "no commits since base: refused" || fail "no commits since base"
 git switch -q feature
