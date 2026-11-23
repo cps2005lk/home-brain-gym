@@ -1,0 +1,16 @@
+# Usage of one agent session. Filled by the factory's SessionEnd hook;
+# a human fills task (in "quotes") and corrections (a number).
+session: 33436c03-95d2-442c-800d-6e5d447bea27
+project: Brain gym
+branch: 002-odd-one-out
+started: 2026-11-23T02:12:54Z
+model: claude-sonnet-5-5
+wall_minutes: 0
+active_minutes: 0
+replies: 1
+tokens_input: 2
+tokens_cache_write: 82073
+tokens_cache_read: 3546
+tokens_output: 1551
+task:
+corrections:
