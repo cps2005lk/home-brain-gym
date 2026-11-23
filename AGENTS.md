@@ -30,6 +30,10 @@ Home Brain Gym: short brain games for two kids. React + Vite + TypeScript
 
 ## Rules
 
+- Before you write or review code, read `docs/brain/standards/` and follow
+  it. Follow only ADRs in `docs/brain/decisions/` with the status
+  `accepted`. Never change a standard or an ADR to make your code pass:
+  stop and ask.
 - Never push to `main`. Every push to `main` deploys to the live app.
 - Kids' data: only nickname, avatar, level and scores. No birthdates, photos,
   tracking or analytics. Ask before adding any field about a kid.
