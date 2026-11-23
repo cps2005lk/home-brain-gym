@@ -205,14 +205,15 @@ the permissions its job needs, up front: **smallest world, but complete.**
 
 ## Which model for which role
 
-Chosen by a measured experiment, not by feel (M11,
-`docs/experiments/m11-reviewer-models.md` in the factory repo):
+Chosen by measured experiments, not by feel (M11 reviewer and M12
+implementer, `docs/experiments/` in the factory repo):
 
 | Role | Model | Evidence |
 | --- | --- | --- |
 | Reviewer, default | Sonnet (set in `agents/reviewer.md`) | Found 4 of 4 planted bugs, no invented findings, fewest tokens |
 | Reviewer, risky areas (kids' data, money, access, time) | Opus: `review.sh --model opus …` | Rated the kids'-data bug critical in both runs; Sonnet said major |
-| Implementer, paper runs | Opus (the default) | Not measured yet |
+| Implementer, small well-specified tasks (short loop) | Sonnet: `AGENT_MODEL=sonnet` in the box, or `--model sonnet` | 12/12 hidden tests in both runs, the fewest tokens, the fastest (M12) |
+| Implementer, features (full loop), paper runs | Opus (the default) | Not measured yet (planned: a feature-sized task with a control run) |
 | Not used as reviewer | Haiku | Invented findings in both runs |
 
 **To compare models yourself:** plant bugs you know about (each keeping the
@@ -273,6 +274,10 @@ For runs nobody watches, the agent works in a Docker container:
 - **Pinned with a cooldown:** the base image by digest, Claude Code and the
   GitHub CLI by version (the CLI from its release, checked against its
   published checksum).
+- **Experiments:** `AGENT_MODEL` picks the implementer's model and `NO_PUSH=1`
+  keeps the work in the outbox (bundle, report, check result) instead of
+  opening a PR. `run.sh outbox` copies it to `~/factory-outbox`, outside
+  every repo (a folder inside `.factory/` would break its checksums).
 
 ## Your own sessions: the agent token
 
