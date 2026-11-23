@@ -162,3 +162,43 @@ CHANGES NEEDED and named the missing requirement. It also found a Red step
 merged into a Green commit, a claim it couldn't verify, and tooling in the
 feature diff. It admitted it skimmed the plan; listing "Not checked" made
 the shortcut visible.
+
+## How much process? Match the weight to the risk
+
+The full loop is expensive: in M10 it cost about 65 times the output tokens
+of plain Claude fixing one bug. What it buys is proof. Use as much as the
+risk needs:
+
+| Change | Rung | Loop |
+| --- | --- | --- |
+| Docs, comments, a typo | 2 | Branch, PR, checks. The human reads it |
+| A small fix in a tested area | 2 | A failing test first, the fix, the reviewer (`review.sh` with a short spec folder, or a human review). No Spec Kit |
+| A feature, or anything in a risky area (money, kids' data, access, time) | 2–3 | The full loop: spec, plan, tasks, analyze, implementer, reviewer, gate, human checks |
+| Database migrations, settings, deploys | always human | Agents may draft; a human runs them |
+
+## Running roles headless
+
+When a human asks an agent to run a role without a person at the keyboard
+(`claude -p`), nobody can answer a permission prompt. A missing permission
+makes the agent stop (good) or look for another way (bad). So give each role
+the permissions its job needs, up front: **smallest world, but complete.**
+
+| Role | Permissions |
+| --- | --- |
+| Paper runs (specify, plan, tasks, fixes on paper) | `--permission-mode acceptEdits`; `Bash(.specify/scripts/bash/*)`, read-only git, `git add`, `git commit`, the formatter |
+| Implementer | `--agent implementer --permission-mode acceptEdits`; the project's test and check commands, the type checker, linter and formatter, read-only git, `git add`, `git commit`. No installs, no push |
+| Reviewer | Started by `review.sh`, which removes Bash, Edit and Write |
+| Analyze | `Bash(.specify/scripts/bash/*)` and read-only git. No edits |
+
+- **Create the branch before the run.** The implementer can't commit on
+  `main`, and branch commands are not in its permissions.
+- **Pass the prompt on stdin**, never as an argument after
+  `--allowedTools`: that flag takes a list and swallows the prompt.
+- **One command per call** (in `implementer.md`): a chained command needs
+  approval as a whole, and then nothing runs.
+- **Prepare each Red-proof checkout** with `scripts/review-setup.sh` if the
+  checks need files git doesn't hold (for example, link `node_modules`):
+  a proof must run where the real thing runs.
+- **The order of the human checks doesn't matter** for the gate: it counts
+  ticks, and the reviewer lists human tasks under "Waiting for the human".
+  Code changes after the review need a new review; ticks and docs don't.

@@ -117,5 +117,16 @@ git switch -q -c no-reds main && echo x >x.sh && git add -A && git commit -q -m 
 "$script" --check "true" specs/002-y >/dev/null 2>&1
 grep -q "no Red step can be proven" "$tmp/prompt" && pass "no Red: commits: said plainly" || fail "no reds"
 
+# The project prepares each checkout (scripts/review-setup.sh), e.g. node_modules.
+git add -A && git commit -q -m "wip" && git switch -q feature
+mkdir -p scripts && printf '#!/usr/bin/env bash\necho "SETUP-OK from $REVIEW_ROOT" > setup.txt\n' >scripts/review-setup.sh
+chmod +x scripts/review-setup.sh && git add -A && git commit -q -m "review setup"
+"$script" --check "cat setup.txt; test -f code.sh" specs/002-y >/dev/null 2>&1
+grep -q "SETUP-OK from $(cd "$q" && pwd -P)" "$tmp/prompt" && pass "review-setup.sh runs in each checkout, with REVIEW_ROOT" || fail "review-setup runs"
+git add -A && git commit -q -m "review" && printf '#!/usr/bin/env bash\nexit 1\n' >scripts/review-setup.sh && git add -A && git commit -q -m "broken setup"
+"$script" --check "test -f code.sh" specs/002-y >/dev/null 2>&1
+grep -q "could not prepare the checkout (scripts/review-setup.sh failed). NOT proven" "$tmp/prompt" && pass "a failing setup is reported as not proven" || fail "failing setup"
+[[ -z "$(git worktree list | sed 1d)" ]] && pass "no worktrees left after a failing setup" || fail "worktrees left after failing setup"
+
 echo
 [[ $fails == 0 ]] && echo "All tests passed." || { echo "$fails test(s) failed."; exit 1; }
