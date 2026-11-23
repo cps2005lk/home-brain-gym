@@ -35,12 +35,24 @@ cmd="$(jq -r '.tool_input.command // empty' <<<"$input")"
 [[ -n "$cmd" ]] || block "no command in the hook input, so nothing was checked."
 
 reason="$("$check" "$cmd" 2>&1 >/dev/null)"
-case $? in
-  0) exit 0 ;;
+code=$?
+
+# Identity: a GitHub write (push, PR, issue, release, repo) in a session that
+# has your full login instead of the agent token needs a human yes.
+# Start Claude with claude-agent.sh to use the agent token.
+identity=""
+w='(^|[;&|(` ]|$\()'
+if [[ "${GH_TOKEN:-}" != github_pat_* ]] && {
+     [[ "$cmd" =~ ${w}git([[:space:]]+-[^[:space:]]+)*[[:space:]]+push([[:space:]]|$) ]] ||
+     [[ "$cmd" =~ ${w}gh[[:space:]]+(pr[[:space:]]+(create|edit|merge|close|comment|review|ready|reopen)|issue[[:space:]]+(create|edit|close|comment|reopen)|release[[:space:]]+(create|edit|delete|upload)|repo[[:space:]]+(create|edit|delete|rename|archive)) ]]; }; then
+  identity="this session writes to GitHub with your full login, not the agent token. Start Claude with claude-agent.sh to use the agent token."
+fi
+ask() { jq -n --arg r "$1" '{hookSpecificOutput: {hookEventName: "PreToolUse", permissionDecision: "ask", permissionDecisionReason: $r}}'; exit 0; }
+
+case $code in
+  0) [[ -n "$identity" ]] && ask "factory: $identity"; exit 0 ;;
   1) block "$reason
 This is a factory guardrail. Don't look for a way around it: tell the user what you wanted to do and why." ;;
-  3) jq -n --arg r "$reason" '{hookSpecificOutput: {hookEventName: "PreToolUse",
-       permissionDecision: "ask", permissionDecisionReason: $r}}'
-     exit 0 ;;
+  3) ask "$reason${identity:+ Also: $identity}" ;;
   *) block "${reason:-risky-command.sh could not check the command.}" ;;
 esac

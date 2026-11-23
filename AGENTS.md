@@ -10,6 +10,9 @@ Home Brain Gym: short brain games for two kids. React + Vite + TypeScript
   strips types, so type errors hide behind green tests.
 - Once per clone, turn on the git hooks: `.factory/guardrails/setup-hooks.sh`
   They block commits on `main`, secrets, and pushes that fail `scripts/check.sh`.
+- Once per clone, also run `.factory/adapters/claude/setup-identity.sh`: git then
+  follows the session's GitHub token. Start agent sessions with `claude-agent`
+  (the limited agent token); a GitHub write without it asks the human first.
 - `.claude/settings.json` checks every shell command an agent runs (factory
   kit). A block is a stop sign: tell the user, don't work around it.
 - Each session writes `docs/usage/<date>-<session>.yml`. Commit new ones with

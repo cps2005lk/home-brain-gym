@@ -273,3 +273,21 @@ For runs nobody watches, the agent works in a Docker container:
 - **Pinned with a cooldown:** the base image by digest, Claude Code and the
   GitHub CLI by version (the CLI from its release, checked against its
   published checksum).
+
+## Your own sessions: the agent token
+
+The box uses the agent's limited GitHub token. Sessions on your Mac should
+too, so that "settings are always human" stays a lock there as well.
+
+- **Once per clone:** `.factory/adapters/claude/setup-identity.sh`. Git then
+  asks `gh` for GitHub credentials instead of the Mac keychain, and `gh` uses
+  the session's `GH_TOKEN` if there is one. Your own terminal (no `GH_TOKEN`)
+  keeps your login, so your pushes still work.
+- **Start agent sessions with** `.factory/adapters/claude/claude-agent.sh`
+  (for example, `alias claude-agent=…` in your shell config). It hands Claude
+  the agent token from the keychain; the token is never printed.
+- **The guard:** in a session without the agent token, a GitHub write (a
+  push, a PR, an issue, a release, a repo change) asks you first. It asks
+  rather than blocks, so an old session can still finish its work.
+- Checked with `git credential fill`, showing only the token's kind: with
+  the agent token git gets the fine-grained token; without it, your login.
