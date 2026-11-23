@@ -61,6 +61,8 @@ run_case "reading review.md is fine"          0 'cat specs/001-x/review.md'
 run_case "committing review.md is fine"       0 'git add specs/001-x/review.md && git commit -m "Review 2"'
 run_case "running review.sh is fine"          0 '.factory/adapters/claude/review.sh specs/001-x > out.txt'
 run_case "grep in review.md is fine"          0 'grep Verdict specs/001-x/review.md'
+run_case "copying a review out is fine"       0 'cp specs/001-x/review.md /tmp/round-1.md'
+run_case "moving a review away: blocked"      1 'mv specs/001-x/review.md /tmp/old.md'
 
 # Should ask a human (3)
 run_case "force-push a branch"                3 'git push --force origin fix'

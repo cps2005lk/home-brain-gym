@@ -18,7 +18,9 @@ Home Brain Gym: short brain games for two kids. React + Vite + TypeScript
   `.specify/memory/constitution.md`). The implementer builds
   (`claude --agent implementer`); a human runs
   `.factory/adapters/claude/review.sh specs/<feature>`. CI blocks the merge
-  until the review approves. How far agents may go: `docs/brain/trust.md`.
+  until the review approves. For kids' data, money, access or time, add
+  `--model opus` (the default reviewer is Sonnet, chosen by experiment).
+  How far agents may go: `docs/brain/trust.md`.
 
 ## Rules
 

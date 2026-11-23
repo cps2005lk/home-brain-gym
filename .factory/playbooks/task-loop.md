@@ -202,3 +202,20 @@ the permissions its job needs, up front: **smallest world, but complete.**
 - **The order of the human checks doesn't matter** for the gate: it counts
   ticks, and the reviewer lists human tasks under "Waiting for the human".
   Code changes after the review need a new review; ticks and docs don't.
+
+## Which model for which role
+
+Chosen by a measured experiment, not by feel (M11,
+`docs/experiments/m11-reviewer-models.md` in the factory repo):
+
+| Role | Model | Evidence |
+| --- | --- | --- |
+| Reviewer, default | Sonnet (set in `agents/reviewer.md`) | Found 4 of 4 planted bugs, no invented findings, fewest tokens |
+| Reviewer, risky areas (kids' data, money, access, time) | Opus: `review.sh --model opus …` | Rated the kids'-data bug critical in both runs; Sonnet said major |
+| Implementer, paper runs | Opus (the default) | Not measured yet |
+| Not used as reviewer | Haiku | Invented findings in both runs |
+
+**To compare models yourself:** plant bugs you know about (each keeping the
+checks green), keep everything else the same, run each model at least twice,
+and count found, invented, tokens and time. Include some hard bugs: if every
+model finds everything, the test can't tell them apart.
