@@ -30,6 +30,19 @@ expect "a non-file tool: exit 0"               0 "" '{"tool_name":"Read","tool_i
 expect "bad JSON: blocked"                    2 "" 'not json'
 expect "Bash without a command: blocked"      2 "" '{"tool_name":"Bash","tool_input":{}}'
 
+# Identity guard: GitHub writes without the agent token need a human yes
+id_case() { # name, GH_TOKEN value, command, want ("ask" or "none")
+  local out; out="$(GH_TOKEN="$2" bash -c '"$0"' "$adapter" <<<"$(bash_json "$3")" 2>/dev/null)"
+  if [[ "$4" == ask && "$out" == *'"ask"'* ]] || [[ "$4" == none && -z "$out" ]]; then pass "$1"; else fail "$1" "got: ${out:-<nothing>}"; fi
+}
+id_case "push without the agent token: ask"       ""                  "git push -u origin fix"        ask
+id_case "push with the agent token: no question"   "github_pat_abc123" "git push -u origin fix"        none
+id_case "gh pr create without the token: ask"      "gho_abc123"        "gh pr create --fill"           ask
+id_case "reading is fine without the token"        ""                  "gh pr view 3 --json state"     none
+id_case "git status is fine"                       ""                  "git status"                    none
+id_case "push inside a chain: ask"                 ""                  "npm test && git push"         ask
+id_case "a word like pushed is not a push"         ""                  "echo pushed"                   none
+
 # The reason reaches Claude (stderr) when blocked
 err="$(bash_json 'gh pr merge 2' | "$adapter" 2>&1 >/dev/null)"
 grep -q "merging is a human decision" <<<"$err" && pass "block reason on stderr" || fail "block reason on stderr" "got: $err"
