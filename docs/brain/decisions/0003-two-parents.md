@@ -1,4 +1,7 @@
-# Two parents in one family
+# 0003: Two parents in one family
+
+- **Status:** accepted
+- **Date:** 2026-11-05
 
 Agreed 5 November 2026. Lets a second parent (or more) share the same family,
 see the same kids and the same scores, on their own device and their own Google
@@ -153,3 +156,7 @@ parent comes back signed in, the code is waiting, already filled in.
 A link carries slightly more risk than a typed code - it can sit in a chat
 history. It is still single use, lasts 7 days, can be cancelled, and can be
 locked to one email address.
+
+## Changes
+
+- 2026-11-23: status and date added (kit v0.15.0); no change to the decisions.

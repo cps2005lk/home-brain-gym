@@ -36,3 +36,7 @@ a draft; a `replaced` one is history.
 ## Numbers
 
 Take the next free number when you create the file. Never reuse a number.
+
+`0001` was the original project brief, not a decision. It moved to
+[docs/history/original-brief.md](../../history/original-brief.md) on
+2026-11-23; the number is not reused.
