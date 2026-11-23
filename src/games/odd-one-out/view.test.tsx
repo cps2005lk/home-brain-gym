@@ -170,6 +170,30 @@ describe("Odd One Out screen", () => {
     expect(createRng).toHaveBeenCalledTimes(1);
     expect(buttons[7]?.innerHTML).toBe(differs[0]);
   });
+
+  /** The transform of the drawn shape inside one button. */
+  const transformOf = (button: HTMLElement | undefined): string | null | undefined =>
+    button?.querySelector("svg g")?.getAttribute("transform");
+
+  // Fixed numbers: 7 -> odd shape is Shape 8; 1 -> square (all four changes
+  // allowed); the third number picks from [bigger, smaller, turned, no-dot].
+  it.each([
+    { change: "bigger", roll: 0, odd: { scale: "1.2", turn: "0" } },
+    { change: "smaller", roll: 1, odd: { scale: "0.82", turn: "0" } },
+    { change: "turned", roll: 2, odd: { scale: "1", turn: "20" } },
+  ])("draws the $change Teen shape with its own size and turn (FR-016)", ({ roll, odd }) => {
+    vi.mocked(createRng).mockReturnValueOnce(scriptedRng([7, 1, roll]));
+    render(<OddOneOutView kid={{ ...KID, level: "teen" }} onFinish={vi.fn()} onQuit={vi.fn()} />);
+
+    const buttons = shapeButtons();
+    const commonTransform = "translate(50 50) rotate(0) scale(1) translate(-50 -50)";
+    expect(transformOf(buttons[7])).toBe(
+      `translate(50 50) rotate(${odd.turn}) scale(${odd.scale}) translate(-50 -50)`,
+    );
+    for (const [index, button] of buttons.entries()) {
+      if (index !== 7) expect(transformOf(button)).toBe(commonTransform);
+    }
+  });
 });
 
 /**
