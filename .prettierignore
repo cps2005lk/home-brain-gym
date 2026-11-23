@@ -12,3 +12,6 @@ brain-gym.html
 .specify/integrations
 .specify/memory/.constitution-template.json
 .specify/*.json
+
+# Written by the factory's review.sh and never edited, so never formatted.
+specs/*/review.md
