@@ -5,6 +5,9 @@
 #
 # Usage (inside the box): agent-task.sh owner/repo branch  < prompt
 # Needs: GH_TOKEN (the agent token), GIT_NAME, GIT_EMAIL, TASK_TITLE.
+# Experiments: AGENT_MODEL picks the implementer's model; NO_PUSH=1 keeps
+# the work as a bundle in the outbox (with the report and the check result)
+# instead of pushing and opening a PR.
 set -euo pipefail
 repo="${1:?owner/repo}"; branch="${2:?branch}"; prompt="$(cat)"
 stop() { echo "agent-task: $1" >&2; exit 1; }
@@ -15,7 +18,8 @@ git switch -q -c "$branch"
 [[ -x .factory/guardrails/setup-hooks.sh ]] && .factory/guardrails/setup-hooks.sh >/dev/null
 [[ -f package-lock.json ]] && npm ci --silent --no-audit --no-fund
 
-printf '%s\n' "$prompt" | claude -p --agent implementer --permission-mode acceptEdits \
+model_args=(); [[ -n "${AGENT_MODEL:-}" ]] && model_args=(--model "$AGENT_MODEL")
+printf '%s\n' "$prompt" | claude -p --agent implementer ${model_args[@]+"${model_args[@]}"} --permission-mode acceptEdits \
   --allowedTools "Bash(npx vitest *)" "Bash(npm test*)" "Bash(scripts/check.sh*)" "Bash(npx tsc*)" \
   "Bash(npx prettier *)" "Bash(npx oxlint*)" "Bash(git add *)" "Bash(git commit *)" \
   "Bash(git status*)" "Bash(git diff*)" "Bash(git log*)" "Bash(ls *)" >/work/agent-report.txt 2>&1 || true
@@ -24,6 +28,15 @@ printf '%s\n' "$prompt" | claude -p --agent implementer --permission-mode accept
 [[ -n "$(git log --oneline main..HEAD)" ]] || { cat /work/agent-report.txt; stop "the agent made no commits, so there is nothing to push."; }
 if [[ -n "$(git status --porcelain docs/usage 2>/dev/null)" ]]; then git add docs/usage && git commit -q -m "Usage: agent run in the box"; fi
 [[ -z "$(git status --porcelain)" ]] || { git status --short; stop "uncommitted changes are left, so the work is not complete."; }
+if [[ "${NO_PUSH:-}" == 1 ]]; then
+  out=/home/node/outbox; mkdir -p "$out"
+  check_exit=0; [[ -x scripts/check.sh ]] && { scripts/check.sh >/work/check.txt 2>&1 || check_exit=$?; }
+  git bundle create -q "$out/$branch.bundle" main..HEAD
+  cp /work/agent-report.txt "$out/$branch.report.txt"
+  echo "check.sh exit: $check_exit" >"$out/$branch.check.txt"; tail -40 /work/check.txt >>"$out/$branch.check.txt" 2>/dev/null || true
+  echo "agent-task: experiment mode, no push. Kept $branch.bundle, .report.txt and .check.txt in the outbox."
+  exit 0
+fi
 if [[ -x scripts/check.sh ]]; then scripts/check.sh >/work/check.txt 2>&1 || { tail -20 /work/check.txt; stop "scripts/check.sh fails."; }; fi
 
 # Never lose work: keep a bundle of the commits in the persistent volume
