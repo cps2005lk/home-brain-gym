@@ -436,6 +436,12 @@ a new check or rule, not just a promise. Serious slips:
 
 A slip that was caught by a check is the check working, not a slip.
 
+### Isolation before rung 3
+
+An area can only reach rung 3 (features, less supervision) when agent runs
+are isolated and the isolation was proven with the probe pair (task loop
+playbook, "Isolation"). Trust in the agent is not a substitute for a box.
+
 ### Always human, on every rung
 
 Merging, repo settings, deploying, the live database, secrets, installing

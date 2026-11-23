@@ -36,6 +36,7 @@ run() { "$script" "$@" >"$tmp/out" 2>&1; echo $?; }
 grep -q "^--agent$" "$tmp/args" && grep -qx reviewer "$tmp/args" && pass "runs the reviewer agent" || fail "runs the reviewer agent"
 for t in Bash Edit Write; do grep -qx "$t" "$tmp/args" || fail "removes $t"; done && pass "removes Bash, Edit and Write"
 ! grep -qx -- "--model" "$tmp/args" && pass "no --model unless asked (the agent file decides)" || fail "no --model by default"
+grep -qx -- "--settings" "$tmp/args" && grep -q "sandbox-agent.json$" "$tmp/args" && pass "the reviewer runs with the sandbox settings (isolation)" || fail "sandbox settings passed"
 grep -q "specs/001-x/spec.md" "$tmp/prompt" && grep -q "specs/001-x/tasks.md" "$tmp/prompt" && pass "prompt names the spec and tasks" || fail "prompt names the spec and tasks"
 grep -q "+echo hello" "$tmp/prompt" && pass "prompt has the diff" || fail "prompt has the diff"
 grep -q "Add hello" "$tmp/prompt" && pass "prompt has the commits" || fail "prompt has the commits"

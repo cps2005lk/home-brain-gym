@@ -1,0 +1,16 @@
+{
+  "sandbox": {
+    "enabled": true,
+    "failIfUnavailable": true,
+    "allowUnsandboxedCommands": false,
+    "filesystem": {
+      "denyRead": ["~/.ssh", "~/.aws", "~/.config/gh", "~/.supabase", "./.env", "./.env.local"]
+    },
+    "network": {
+      "allowedDomains": []
+    }
+  },
+  "permissions": {
+    "deny": ["Read(./.env)", "Read(./.env.local)", "Read(~/.ssh/**)", "Read(~/.aws/**)", "Read(~/.config/gh/**)", "Read(~/.supabase/**)"]
+  }
+}

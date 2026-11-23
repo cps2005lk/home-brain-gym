@@ -153,7 +153,10 @@ $(git diff "$base"...HEAD)"
 
 err="$(mktemp)"; trap 'rm -f "$err"' EXIT
 model_args=(); [[ -n "$model" ]] && model_args=(--model "$model")
-review="$(printf '%s\n' "$prompt" | claude -p --agent reviewer ${model_args[@]+"${model_args[@]}"} --disallowedTools Bash Edit Write NotebookEdit 2>"$err")" \
+# Isolation: the reviewer's Read tool must not see secrets either.
+box="$(cd "$(dirname "$0")" && pwd)/sandbox-agent.json"
+[[ -f "$box" ]] || stop "no sandbox-agent.json next to review.sh, so the reviewer would run without isolation."
+review="$(printf '%s\n' "$prompt" | claude -p --agent reviewer --settings "$box" ${model_args[@]+"${model_args[@]}"} --disallowedTools Bash Edit Write NotebookEdit 2>"$err")" \
   || stop "the reviewer run failed: $(tail -3 "$err")"
 
 {
