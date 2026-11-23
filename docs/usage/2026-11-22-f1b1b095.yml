@@ -12,5 +12,5 @@ tokens_input: 112
 tokens_cache_write: 113835
 tokens_cache_read: 4422885
 tokens_output: 41808
-task:
-corrections:
+task: "Odd One Out (002): implement T001-T014 (Junior)"
+corrections: 0

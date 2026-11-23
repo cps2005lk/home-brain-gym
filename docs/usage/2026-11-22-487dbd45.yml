@@ -12,5 +12,5 @@ tokens_input: 90
 tokens_cache_write: 80707
 tokens_cache_read: 3128830
 tokens_output: 24471
-task:
-corrections:
+task: "Odd One Out (002): implement T015-T024 (Teen, docs, mutation check)"
+corrections: 0
