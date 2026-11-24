@@ -141,17 +141,27 @@ $(cat "$f")
 fi
 [[ -n "$standards" ]] || standards="No docs/brain/standards/ folder in this project (or it is empty): no standards to check. Say so under \"Not checked\"."
 
-# Accepted ADRs, listed by path: the reviewer reads the ones the change touches.
+# Accepted ADRs, in full. A list was not enough: in a known-answer test the
+# reviewer never opened an ADR from the list (docs/experiments in the factory).
 # Proposed and replaced ADRs are not in force, so they are left out.
 adrs=""
+accepted_adr_numbers=""
 if [[ -d docs/brain/decisions ]]; then
   while IFS= read -r f; do
     grep -Eiq '^[-*[:space:]]*\*\*Status:\*\*[[:space:]]*accepted[[:space:]]*$' "$f" || continue
     adrs="$adrs
-- $f: $(head -1 "$f" | sed 's/^#[[:space:]]*//')"
+<file path=\"$f\">
+$(cat "$f")
+</file>"
+    n="$(basename "$f" | grep -oE '^[0-9]{4}')" && accepted_adr_numbers="$accepted_adr_numbers $n"
   done < <(find docs/brain/decisions -type f -name '*.md' ! -name README.md ! -name '0000-template.md' | LC_ALL=C sort)
 fi
 [[ -n "$adrs" ]] || adrs="No accepted ADRs in docs/brain/decisions/."
+
+# The IDs of the must rules, for the verdict check after the review.
+must_ids=""
+[[ -d docs/brain/standards ]] && must_ids="$(find docs/brain/standards -type f -name '*.md' -exec cat {} + \
+  | sed -nE 's/^###[[:space:]]+(STD-[0-9]+)[[:space:]]+\(must\).*/\1/p' | sort -u | tr '\n' ' ')"
 
 prompt="Review this feature branch. Follow your instructions in full.
 
@@ -163,7 +173,7 @@ $rules
 ## Standards and guidelines, in full
 $standards
 
-## Accepted ADRs (read the ones this change touches)
+## Accepted ADRs, in full
 $adrs
 
 ## Feature files, in full
@@ -189,6 +199,30 @@ box="$(cd "$(dirname "$0")" && pwd)/sandbox-agent.json"
 review="$(printf '%s\n' "$prompt" | claude -p --agent reviewer --settings "$box" ${model_args[@]+"${model_args[@]}"} --disallowedTools Bash Edit Write NotebookEdit 2>"$err")" \
   || stop "the reviewer run failed: $(tail -3 "$err")"
 
+# Facts for the script: a finding that names a must rule or an accepted ADR
+# can't come with APPROVE. Severity is the AI's judgement and drifts (in a
+# known-answer test a broken must rule was once rated minor); this is not.
+verdict="$(grep -v '^[[:space:]]*$' <<<"$review" | tail -1 | sed 's/[[:space:]]*$//')"
+if [[ "$verdict" == "Verdict: APPROVE" ]]; then
+  findings="$(awk '/^##[[:space:]]+Findings/{on=1; next} /^##[[:space:]]/{on=0} on' <<<"$review" | grep -E '^\|[[:space:]]*[0-9]+[[:space:]]*\|' || true)"
+  named=""
+  for id in $must_ids; do
+    grep -qE "(^|[^0-9A-Za-z-])$id([^0-9]|$)" <<<"$findings" && named="$named $id"
+  done
+  for n in $accepted_adr_numbers; do
+    grep -qE "ADR[[:space:]-]?$n([^0-9]|$)" <<<"$findings" && named="$named ADR $n,"
+  done
+  if [[ -n "$named" ]]; then
+    named="$(sed -E 's/^ //; s/,$//; s/([0-9]) (STD|ADR)/\1, \2/g' <<<"$named")"
+    review="$review
+
+review.sh: the reviewer said APPROVE, but its findings name: $named. A broken \`must\` rule or accepted ADR blocks APPROVE, so the script changed the verdict.
+
+Verdict: CHANGES NEEDED"
+    verdict="Verdict: CHANGES NEEDED"
+  fi
+fi
+
 {
   echo "# Review: $spec"
   echo
@@ -200,7 +234,6 @@ review="$(printf '%s\n' "$prompt" | claude -p --agent reviewer --settings "$box"
   printf '%s\n' "$review"
 } >"$spec/review.md"
 
-verdict="$(grep -v '^[[:space:]]*$' <<<"$review" | tail -1 | sed 's/[[:space:]]*$//')"
 case "$verdict" in
   "Verdict: APPROVE") echo "review: APPROVE. See $spec/review.md"; exit 0 ;;
   "Verdict: CHANGES NEEDED") echo "review: CHANGES NEEDED. See $spec/review.md"; exit 1 ;;

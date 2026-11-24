@@ -119,7 +119,7 @@ maker-checker in a bank or a required reviewer on a pull request.
 | File | `.claude/agents/implementer.md` | `.claude/agents/reviewer.md` |
 | Started by | A human: `claude --agent implementer` | A human: `.factory/adapters/claude/review.sh specs/<feature>` |
 | Tools | All, behind the agent hook | Read, Grep, Glob only (no shell, no edits) |
-| Gets | The feature files, the standards, the accepted ADRs and the repo | A fixed prompt from the script: the standards in full, the list of accepted ADRs, feature files, commits with their files, the diff, the check output |
+| Gets | The feature files, the standards, the accepted ADRs and the repo | A fixed prompt from the script: the standards and accepted ADRs in full, feature files, commits with their files, the diff, the check output |
 | Writes | Code and tests: a `Red:` commit with tests only, then `Green:` | Nothing. The script writes `specs/<feature>/review.md` |
 | Never | Reviews itself, edits `review.md`, changes the spec, a standard, an ADR or a test to pass | Fixes anything |
 
@@ -138,10 +138,14 @@ both roles.
   for something that breaks a `must` rule or an accepted ADR, it stops and
   asks.
 - **The reviewer gets them from the script, not from memory:** `review.sh`
-  puts every standards file into the prompt in full and lists the accepted
-  ADRs (proposed and replaced ones are left out). A finding names the rule:
+  puts every standards file and every accepted ADR into the prompt in full
+  (proposed and replaced ADRs are left out). A finding names the rule:
   "Breaks STD-012: …". A broken `must` rule is at least major, so it blocks
   APPROVE; a broken `should` rule is minor unless the commit gives a reason.
+- **The script checks the verdict:** if the reviewer says APPROVE but a row
+  of its Findings table names a `must` rule or an accepted ADR, `review.sh`
+  adds a note and ends `review.md` with `Verdict: CHANGES NEEDED`. Severity
+  is the AI's judgement and drifts; this is a fact the script can check.
 - **People change them**, through a pull request of their own. An agent
   that changes a standard or an ADR to let its code pass is a critical
   finding. How to write and change rules and ADRs: the `README.md` in each
