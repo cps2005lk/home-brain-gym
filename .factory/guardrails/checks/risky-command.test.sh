@@ -10,6 +10,8 @@ run_case() { # name, wanted exit code, command
 }
 
 # Should allow (0)
+run_case "review.sh, a normal round"          0 '.factory/adapters/claude/review.sh specs/001-x'
+run_case "grep for --another-round"           0 'grep -n -- --another-round .factory/adapters/claude/review.sh'
 run_case "plain commit"                       0 'git commit -m "Fix the timer"'
 run_case "commit --amend (not -n)"            0 'git commit --amend --no-edit'
 run_case "push a branch"                      0 'git push -u origin fix-timer'
@@ -30,6 +32,10 @@ run_case "read core.hooksPath"                 0 'git config core.hooksPath'
 run_case "read core.hooksPath with --get"     0 'git config --get core.hooksPath'
 
 # Should block (1)
+run_case "review.sh --another-round"            1 '.factory/adapters/claude/review.sh --another-round specs/001-x'
+run_case "another round, flag after the folder" 1 'review.sh specs/001-x --another-round'
+run_case "another round through bash"         1 'bash .factory/adapters/claude/review.sh --another-round specs/001-x'
+run_case "another round after cd &&"          1 'cd app && .factory/adapters/claude/review.sh --another-round specs/001-x'
 run_case "push --no-verify"                   1 'git push --no-verify'
 run_case "commit --no-verify"                 1 'git commit --no-verify -m "x"'
 run_case "commit -n"                          1 'git commit -n -m "x"'
