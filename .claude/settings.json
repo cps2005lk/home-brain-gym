@@ -21,6 +21,17 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "timeout": 300,
+            "command": "h=\"$CLAUDE_PROJECT_DIR/.factory/adapters/claude/stop.sh\"; if [ -x \"$h\" ]; then exec \"$h\"; fi; echo \"factory: this branch has no .factory/adapters/claude/stop.sh, so unfinished work was not checked. Ask the user to merge main into this branch.\" >&2; exit 0"
+          }
+        ]
+      }
     ]
   }
 }
