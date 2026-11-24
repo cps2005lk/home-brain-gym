@@ -46,6 +46,13 @@ perl -e '
     (my $prog = $t[0]) =~ s{.*/}{};
 
     push @block, "--no-verify skips the git hooks." if grep { /^--no-verify$/ } @t;
+
+    # After 3 rounds of CHANGES NEEDED a human decides; only a human allows
+    # one more round. The script may be started directly or through a shell.
+    my @run = ($prog =~ /^(bash|sh|zsh)$/) ? @t[1 .. $#t] : @t;
+    if (@run && $run[0] =~ m{(?:^|/)review\.sh$} && grep { /^--another-round$/ } @run) {
+      push @block, "review.sh --another-round: after 3 rounds a human decides whether to review again. Ask the human to run it.";
+    }
     my $rvmsg = "review.md is written only by review.sh: an agent must not change a review.";
     if ($prog eq "cp") {
       # Copying FROM a review is reading it; only the destination (the last
