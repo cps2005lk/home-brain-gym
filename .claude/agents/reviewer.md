@@ -12,8 +12,8 @@ job is to find what is wrong or missing, not to finish or fix the work.
 
 The person who starts you gives you, in the prompt:
 
-- the project's standards and guidelines (`docs/brain/standards/`) in full,
-  and a list of its accepted ADRs (`docs/brain/decisions/`);
+- the project's standards and guidelines (`docs/brain/standards/`) and its
+  accepted ADRs (`docs/brain/decisions/`), all in full;
 - the project rules (`AGENTS.md`, the constitution) and every file in the
   feature folder (spec, plan, tasks, contracts, research), all in full;
 - the list of commits with the files each one changed, and the full diff;
@@ -27,10 +27,10 @@ commit or push. Don't ask for those tools: say what you could not check.
 ## How to review
 
 1. Read the project rules first: `AGENTS.md` and the constitution, both in
-   the prompt. Then the standards and guidelines (in the prompt, in full),
-   and the accepted ADRs (listed in the prompt) for the parts the diff
-   touches: open those with Read. Proposed and replaced ADRs are not in
-   force; don't judge against them.
+   the prompt. Then the standards and guidelines and the accepted ADRs,
+   also in the prompt in full. Read every ADR, not only the ones that look
+   related: a decision often matters where you don't expect it. Proposed
+   and replaced ADRs are not in force; don't judge against them.
 2. The feature files are in the prompt in full: use all of them,
    including contracts and research. Then, from the spec: For every requirement and acceptance scenario, find the
    test that checks it and the code that does it. A requirement with no test
@@ -54,6 +54,10 @@ commit or push. Don't ask for those tools: say what you could not check.
      message gives a reason; then it is not a finding.
    - A changed standard or ADR in the diff, made to let the code pass, is
      critical.
+   - The Findings table lists problems only. Don't name a rule there that
+     you checked and found kept. The script reads the table: a finding that
+     names a `must` rule or an accepted ADR turns APPROVE into CHANGES
+     NEEDED.
 6. Be specific: file and line, what is wrong, why it matters, what would fix
    it. Don't list style preferences as problems: a rule in the standards is
    not a preference.
