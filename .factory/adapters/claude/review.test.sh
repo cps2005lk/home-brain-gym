@@ -14,7 +14,7 @@ cat >"$tmp/bin/claude" <<'SH'
 #!/usr/bin/env bash
 printf '%s\n' "$@" >"$FAKE_DIR/args"
 cat >"$FAKE_DIR/prompt"
-printf 'Findings: none\n\n%b\n' "${FAKE_LAST:-Verdict: APPROVE}"
+printf '%b\n\n%b\n' "${FAKE_BODY:-Findings: none}" "${FAKE_LAST:-Verdict: APPROVE}"
 SH
 chmod +x "$tmp/bin/claude"
 export FAKE_DIR="$tmp" PATH="$tmp/bin:$PATH"
@@ -107,9 +107,9 @@ echo "SPEC-TEXT-123" >specs/002-y/spec.md; echo "CONTRACT-TEXT-456" >specs/002-y
 printf 'OLD-REVIEW-789\nVerdict: APPROVE\n' >specs/002-y/review.md; echo reviewer >.claude/agents/reviewer.md
 echo "RULES-TEXT-321" >AGENTS.md
 mkdir -p docs/brain/standards/more docs/brain/decisions
-echo "STD-TEXT-555" >docs/brain/standards/coding.md; echo "STD-NESTED-556" >docs/brain/standards/more/api.md
-printf '# 0001: Use X\n\n- **Status:** accepted\n' >docs/brain/decisions/0001-use-x.md
-printf '# 0002: Use Y\n\n- **Status:** proposed\n' >docs/brain/decisions/0002-use-y.md
+printf 'STD-TEXT-555\n\n### STD-101 (must): A must rule\n\n### STD-102 (should): A should rule\n' >docs/brain/standards/coding.md; echo "STD-NESTED-556" >docs/brain/standards/more/api.md
+printf '# 0001: Use X\n\n- **Status:** accepted\n\nADR-BODY-X-901\n' >docs/brain/decisions/0001-use-x.md
+printf '# 0002: Use Y\n\n- **Status:** proposed\n\nADR-BODY-Y-902\n' >docs/brain/decisions/0002-use-y.md
 printf '# 0003: Use Z\n\n- **Status:** replaced by 0004\n' >docs/brain/decisions/0003-use-z.md
 printf '# 0004: Use W\n\n- **Status:** Accepted\n' >docs/brain/decisions/0004-use-w.md
 printf '# NNNN\n\n- **Status:** proposed | accepted | replaced by NNNN\n' >docs/brain/decisions/0000-template.md
@@ -124,12 +124,34 @@ red2="$(git rev-parse --short HEAD)"
 grep -q "SPEC-TEXT-123" "$tmp/prompt" && grep -q "CONTRACT-TEXT-456" "$tmp/prompt" && pass "every feature file is in the prompt, in full" || fail "feature files in full"
 grep -q "RULES-TEXT-321" "$tmp/prompt" && pass "the project rules are in the prompt, in full" || fail "project rules in full"
 grep -q "STD-TEXT-555" "$tmp/prompt" && grep -q "STD-NESTED-556" "$tmp/prompt" && pass "every standards file is in the prompt, in full" || fail "standards in full"
-grep -q "docs/brain/decisions/0001-use-x.md" "$tmp/prompt" && grep -q "docs/brain/decisions/0004-use-w.md" "$tmp/prompt" && pass "accepted ADRs are listed" || fail "accepted ADRs listed"
+grep -q "docs/brain/decisions/0001-use-x.md" "$tmp/prompt" && grep -q "docs/brain/decisions/0004-use-w.md" "$tmp/prompt" && pass "accepted ADRs are named" || fail "accepted ADRs named"
+grep -q "ADR-BODY-X-901" "$tmp/prompt" && pass "accepted ADRs are in the prompt, in full" || fail "accepted ADRs in full"
+! grep -q "ADR-BODY-Y-902" "$tmp/prompt" && pass "a proposed ADR's text is left out" || fail "proposed ADR text left out"
 ! grep -q -e "0002-use-y" -e "0003-use-z" -e "0000-template" -e "decisions/README" "$tmp/prompt" && pass "proposed, replaced, template and README are left out" || fail "non-accepted ADRs left out"
 ! grep -q "OLD-REVIEW-789" "$tmp/prompt" && pass "the old review is left out" || fail "old review left out"
+
 grep -q "$red1 Red: add the test: checks FAIL (exit 1)" "$tmp/prompt" && pass "a real Red step is proven (checks fail there)" || fail "real Red proven"
 grep -q "$red2 Red: a test that passes at once: checks PASS (exit 0)\. This Red step is NOT proven" "$tmp/prompt" && pass "a Red step that passes is reported as not proven" || fail "fake Red reported"
 [[ -z "$(git worktree list | sed 1d)" ]] && pass "no worktrees left behind" || fail "worktrees left behind"
+
+# The verdict is checked against the rules: a finding that names a must rule
+# or an accepted ADR can't come with APPROVE.
+verdict_case() { # <body> <last line> <expected exit> <name>
+  git checkout -q -- specs/002-y/review.md
+  FAKE_BODY="$1" FAKE_LAST="$2" "$script" --check "true" specs/002-y >"$tmp/out" 2>&1; local rc=$?
+  [[ $rc == "$3" ]] && pass "$4" || fail "$4" "exit $rc"
+}
+row() { printf '## Findings\n\n| # | Severity | Where | Problem |\n| --- | --- | --- | --- |\n| 1 | minor | x.ts | %s |\n\n## Not checked\n\n%s' "$1" "${2:-Nothing.}"; }
+verdict_case "$(row "Breaks STD-101: x")" "Verdict: APPROVE" 1 "APPROVE + a broken must rule in the findings: CHANGES NEEDED (exit 1)"
+tail -1 specs/002-y/review.md | grep -qx "Verdict: CHANGES NEEDED" && grep -q "findings name: STD-101" specs/002-y/review.md && pass "review.md says why, and ends CHANGES NEEDED" || fail "review.md says why"
+verdict_case "$(row "Breaks ADR 0001: x")" "Verdict: APPROVE" 1 "APPROVE + an accepted ADR in the findings: CHANGES NEEDED"
+verdict_case "$(row "Breaks STD-102: x")" "Verdict: APPROVE" 0 "a should rule doesn't block APPROVE"
+verdict_case "$(row "Breaks ADR 0002: x")" "Verdict: APPROVE" 0 "a proposed ADR doesn't block APPROVE"
+verdict_case "$(row "Small naming nit" "| 2 | Checked STD-101 and ADR 0001: fine |")" "Verdict: APPROVE" 0 "a must rule outside the findings doesn't block"
+verdict_case "$(row "Breaks STD-1010: x")" "Verdict: APPROVE" 0 "STD-1010 is not STD-101"
+verdict_case "$(row "Breaks STD-101: x")" "Verdict: CHANGES NEEDED" 1 "CHANGES NEEDED stays as it is"
+! grep -q "findings name" specs/002-y/review.md && pass "no note when the reviewer already blocked" || fail "no note when blocked"
+git checkout -q -- specs/002-y/review.md
 git switch -q -c no-reds main && echo x >x.sh && git add -A && git commit -q -m "Add x"
 "$script" --check "true" specs/002-y >/dev/null 2>&1
 grep -q "no Red step can be proven" "$tmp/prompt" && pass "no Red: commits: said plainly" || fail "no reds"
